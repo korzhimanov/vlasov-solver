@@ -1,0 +1,39 @@
+/*
+ * Use of this source code is governed by the MIT License (MIT).
+ * See the LICENSE file for details.
+ *
+ * Copyright (c) 2016 Artem Korzhimanov <korzhimanov.artem@gmail.com>
+ */
+
+/**
+ * \file particle.h
+ * \brief The header file which defines Particle class
+ * \author Artem Korzhimanov
+ * \copyright The MIT License (MIT)
+ */
+
+#ifndef PARTICLE_H
+#define PARTICLE_H
+
+/**
+ * /class Particle
+ * The class implements parameters of test particles and some useful methods on them
+*/
+class Particle
+{
+    public:
+        Particle();
+        Particle(double *position, double *momentum, double mass, double charge);
+        ~Particle();
+        void SetPosition(double *position);
+        void SetMomentum(double *momentum);
+        double GetGamma();
+        void MakeStep(double dt, double *E, double *B);
+
+        double* r; // position in space
+        double* p; // momentum
+        int q; // charge
+        double m; // mass
+};
+
+#endif // PARTICLE_H
