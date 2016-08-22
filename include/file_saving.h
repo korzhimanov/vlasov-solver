@@ -7,15 +7,13 @@
 
 /**
  * \file file_saving.h
- * \brief The header file which defines FileSaving class
+ * \brief The header file which defines some methods for convenient work with files
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
  */
 
 #ifndef FILE_SAVING_H
 #define FILE_SAVING_H
-
-#define SYSTEM 1 // 0 - Windows, 1 - Linux
 
 #include <cstdlib>
 #include <cstdio>
@@ -26,38 +24,32 @@
 #include <zlib.h>
 #include <sys/stat.h>
 
-/**
- * /class FileSaving
- * The class implements some useful functions to work with files
-*/
-class FileSaving
+namespace filesaving
 {
-public:
-    FileSaving();
-    virtual ~FileSaving();
 
-    FILE *open_file(const char *mode, const char *main_dir, const char *name, ...);
-    void close_file(FILE *file);
+FILE *open_file(const char *mode, const char *main_dir, const char *name, ...);
+void close_file(FILE *file);
 
-    void create_dir(char *out, const char *main_dir, const char *dir, ...);
-    void create_dir(const char *main_dir, const char *dir, ...);
+void create_dir(char *out, const char *main_dir, const char *dir, ...);
+void create_dir(const char *main_dir, const char *dir, ...);
 
-    void save_file_1D(float *a, const int num, const char *main_dir, const char *name, ...);
-    void save_file_1D(float *a, const int num, const int step, const char *main_dir, const char *name, ...);
-    void save_file_1D(double *a, const int num, const char *main_dir, const char *name, ...);
-    void save_file_1D(double *a, const int num, const int step, const char *main_dir, const char *name, ...);
-    void save_file_1D(int *a, const int num, const char *main_dir, const char *name, ...);
-    void save_file_1D(int *a, const int num, const int step, const char *main_dir, const char *name, ...);
+void save_file_1D(float *a, const int num, const char *main_dir, const char *name, ...);
+void save_file_1D(float *a, const int num, const int step, const char *main_dir, const char *name, ...);
+void save_file_1D(double *a, const int num, const char *main_dir, const char *name, ...);
+void save_file_1D(double *a, const int num, const int step, const char *main_dir, const char *name, ...);
+void save_file_1D(int *a, const int num, const char *main_dir, const char *name, ...);
+void save_file_1D(int *a, const int num, const int step, const char *main_dir, const char *name, ...);
 
-    template<typename Type> void save_file_1D_bin(Type *a, const int num, const char *main_dir, const char *name, ...);
-    template<typename Type> void save_file_1D_gzip(Type *a, const int num, const char *main_dir, const char *name, ...);
+template<typename Type> void save_file_1D_bin(Type *a, const int num, const char *main_dir, const char *name, ...);
+template<typename Type> void save_file_1D_gzip(Type *a, const int num, const char *main_dir, const char *name, ...);
 
-    void save_file_2D(double *a, int columns, int strings, const char *main_dir, const char *name, ...);
-    void save_file_2D_transpose(double *a, int columns, int strings, const char *main_dir, const char *name, ...);
-};
+void save_file_2D(double *a, int columns, int strings, const char *main_dir, const char *name, ...);
+void save_file_2D_transpose(double *a, int columns, int strings, const char *main_dir, const char *name, ...);
+
+} // namespace filesaving
 
 template<typename Type>
-void FileSaving::save_file_1D_bin(Type *a, const int num, const char *main_dir, const char *name, ...)
+void filesaving::save_file_1D_bin(Type *a, const int num, const char *main_dir, const char *name, ...)
 {
     char temp[512];
     strcpy(temp, main_dir);
@@ -74,7 +66,7 @@ void FileSaving::save_file_1D_bin(Type *a, const int num, const char *main_dir, 
 }
 
 template<typename Type>
-void FileSaving::save_file_1D_gzip(Type *a, const int num, const char *main_dir, const char *name, ...)
+void filesaving::save_file_1D_gzip(Type *a, const int num, const char *main_dir, const char *name, ...)
 {
     char temp[512];
     strcpy(temp, main_dir);

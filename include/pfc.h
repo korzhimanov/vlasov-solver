@@ -43,7 +43,6 @@ public:
         N_0, // critical concentration in the boosted frame (useful for simulation of oblique irradiation)
         P0; // initial mean momentum along y-axis (useful for simulation of oblique irradiation in boosted frame)
 private:
-    FileSaving *fs;
     double *f1, *f2;
     Mesh *mesh;
     int MAX_P, // number of steps in momentum space

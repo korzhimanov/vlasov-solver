@@ -17,7 +17,6 @@
 PFC::PFC()
 {
     onesixth = 1./6.;
-    fs = new FileSaving;
 }
 
 PFC::PFC(int particle_type, pyinput *in, Mesh *grid)
@@ -32,7 +31,6 @@ PFC::~PFC()
     delete[] f2;
     delete[] p;
     delete[] p2;
-    delete fs;
 }
 
 void PFC::SetNotNegative(pyinput *in, std::string name, int *var)
@@ -368,7 +366,7 @@ void PFC::SaveConcentrationTxt(std::string filename)
 
     CalcConcDstr(n);
 
-    fs->save_file_1D(n, mesh->MAX_Z, "", (filename+".txt").c_str());
+    filesaving::save_file_1D(n, mesh->MAX_Z, "", (filename+".txt").c_str());
 
     delete[] n;
 }
@@ -401,7 +399,7 @@ void PFC::SaveConcentrationGZip(std::string filename)
 
 void PFC::SaveDstrFunctionTxt(std::string filename)
 {
-    fs->save_file_2D_transpose(f1, MAX_P, mesh->MAX_Z, "", (filename+".txt").c_str());
+    filesaving::save_file_2D_transpose(f1, MAX_P, mesh->MAX_Z, "", (filename+".txt").c_str());
 }
 
 void PFC::SaveDstrFunctionBin(std::string filename)
@@ -428,7 +426,7 @@ void PFC::SaveEmitRadiationTxt(std::string filename, int max_harmonic, int dn, d
         I[n/dn] = CalcEmitRadiation(double(n), fdtd, ez, ax, ay, a2)*dt;
     }
 
-    fs->save_file_1D(I, max_harmonic/dn+1, "", (filename+".txt").c_str());
+    filesaving::save_file_1D(I, max_harmonic/dn+1, "", (filename+".txt").c_str());
 
     delete[] I;
 }

@@ -40,7 +40,6 @@
 class Solver
 {
     public:
-        FileSaving *fs;
         // general parameters
         int ppw; Mesh *mesh;
         double THETA;
@@ -170,8 +169,6 @@ class Solver
 
 Solver::Solver(std::string file_name = "input.py", std::string directory_name = "output")
 {
-    fs = new FileSaving;
-
     int err = InitVars(file_name, directory_name);
     if( err == 0 )
     {
@@ -206,8 +203,6 @@ Solver::~Solver()
     delete[] plasma_energy;
 
     delete in;
-
-    delete fs;
 }
 
 int Solver::InitVars(std::string file_name, std::string directory_name)
@@ -356,29 +351,20 @@ void Solver::CreateDirs()
 {
     // creating main directory for saving
     {
-        if (SYSTEM == 0)
-            fs->create_dir(main_dir, "", (output_directory_name + "\\").c_str());
-        else
-            fs->create_dir(main_dir, "", (output_directory_name + "/").c_str());
+        filesaving::create_dir(main_dir, "", (output_directory_name + "/").c_str());
     }
 
     // creating directory for test particles
     if (NUM_PRT > 0)
     {
-        if (SYSTEM == 0)
-            fs->create_dir(main_dir, "particles\\");
-        else
-            fs->create_dir(main_dir, "particles/");
+        filesaving::create_dir(main_dir, "particles/");
     }
 
     // creating directories for storing distribution functions in files
     if (save_dstr == true)
         for (int sp = 0; sp < NUM_SP; sp++)
         {
-            if (SYSTEM == 0)
-                fs->create_dir(main_dir, "dstr_func%d\\", sp);
-            else
-                fs->create_dir(main_dir, "dstr_func%d/", sp);
+            filesaving::create_dir(main_dir, "dstr_func%d/", sp);
         }
 }
 
@@ -386,7 +372,7 @@ void Solver::SaveInput(std::string file)
 {
     // storing information about input parameters
     FILE *input;
-    input = fs->open_file("w+", main_dir, file.c_str());
+    input = filesaving::open_file("w+", main_dir, file.c_str());
     fprintf(input, "\nVlasov-Maxwell code. Developed by Artem Korzhimanov and Arkady Gonoskov. mailto: kav@ufp.appl.sci-nnov.ru\n");
 
     fprintf(input, "\nGENERAL PARAMETERS\n\n");
@@ -425,17 +411,17 @@ void Solver::SaveInput(std::string file)
         fprintf(input, "\tDistribution functions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", save_dstr_dt, (double)save_dstr_dt/ppw, save_dstr_format.c_str());
     else fprintf(input, "\tDistribution functions are not being saved\n");
 
-    fs->close_file(input);
+    filesaving::close_file(input);
 }
 
 void Solver::InitOutput(std::string file)
 {
-    output = fs->open_file("w+", main_dir, file.c_str());
+    output = filesaving::open_file("w+", main_dir, file.c_str());
     fprintf(output, " Step |   Neutrality   |");
     for (int sp = 0; sp < NUM_SP; sp++)
         fprintf(output, "       W_%d       |", sp);
     fprintf(output, "     W_el-st    |     W_laser    |     EM Flux    |     W_total    |\n");
-    fs->close_file(output);
+    filesaving::close_file(output);
 }
 
 void Solver::MoveParticles()
@@ -484,35 +470,35 @@ void Solver::SaveFields(int k)
 
         if (format == "txt")
         {
-            fs->save_file_1D(fdtd->ex, mesh->MAX_Z, main_dir, "ex.txt");
-            fs->save_file_1D(fdtd->ey, mesh->MAX_Z, main_dir, "ey.txt");
-            fs->save_file_1D(fdtd->hx, mesh->MAX_Z, main_dir, "hx.txt");
-            fs->save_file_1D(fdtd->hy, mesh->MAX_Z, main_dir, "hy.txt");
-            fs->save_file_1D(ez, mesh->MAX_Z, main_dir, "ez.txt");
+            filesaving::save_file_1D(fdtd->ex, mesh->MAX_Z, main_dir, "ex.txt");
+            filesaving::save_file_1D(fdtd->ey, mesh->MAX_Z, main_dir, "ey.txt");
+            filesaving::save_file_1D(fdtd->hx, mesh->MAX_Z, main_dir, "hx.txt");
+            filesaving::save_file_1D(fdtd->hy, mesh->MAX_Z, main_dir, "hy.txt");
+            filesaving::save_file_1D(ez, mesh->MAX_Z, main_dir, "ez.txt");
 
-            fs->save_file_1D(a2, mesh->MAX_Z, main_dir, "vecpot2.txt");
+            filesaving::save_file_1D(a2, mesh->MAX_Z, main_dir, "vecpot2.txt");
         }
 
         if (format == "bin")
         {
-            fs->save_file_1D_bin(fdtd->ex, mesh->MAX_Z, main_dir, "ex.bin");
-            fs->save_file_1D_bin(fdtd->ey, mesh->MAX_Z, main_dir, "ey.bin");
-            fs->save_file_1D_bin(fdtd->hx, mesh->MAX_Z, main_dir, "hx.bin");
-            fs->save_file_1D_bin(fdtd->hy, mesh->MAX_Z, main_dir, "hy.bin");
-            fs->save_file_1D_bin(ez, mesh->MAX_Z, main_dir, "ez.bin");
+            filesaving::save_file_1D_bin(fdtd->ex, mesh->MAX_Z, main_dir, "ex.bin");
+            filesaving::save_file_1D_bin(fdtd->ey, mesh->MAX_Z, main_dir, "ey.bin");
+            filesaving::save_file_1D_bin(fdtd->hx, mesh->MAX_Z, main_dir, "hx.bin");
+            filesaving::save_file_1D_bin(fdtd->hy, mesh->MAX_Z, main_dir, "hy.bin");
+            filesaving::save_file_1D_bin(ez, mesh->MAX_Z, main_dir, "ez.bin");
 
-            fs->save_file_1D_bin(a2, mesh->MAX_Z, main_dir, "vecpot2.bin");
+            filesaving::save_file_1D_bin(a2, mesh->MAX_Z, main_dir, "vecpot2.bin");
         }
 
         if (format == "gzip")
         {
-            fs->save_file_1D_gzip(fdtd->ex, mesh->MAX_Z, main_dir, "ex.gz");
-            fs->save_file_1D_gzip(fdtd->ey, mesh->MAX_Z, main_dir, "ey.gz");
-            fs->save_file_1D_gzip(fdtd->hx, mesh->MAX_Z, main_dir, "hx.gz");
-            fs->save_file_1D_gzip(fdtd->hy, mesh->MAX_Z, main_dir, "hy.gz");
-            fs->save_file_1D_gzip(ez, mesh->MAX_Z, main_dir, "ez.gz");
+            filesaving::save_file_1D_gzip(fdtd->ex, mesh->MAX_Z, main_dir, "ex.gz");
+            filesaving::save_file_1D_gzip(fdtd->ey, mesh->MAX_Z, main_dir, "ey.gz");
+            filesaving::save_file_1D_gzip(fdtd->hx, mesh->MAX_Z, main_dir, "hx.gz");
+            filesaving::save_file_1D_gzip(fdtd->hy, mesh->MAX_Z, main_dir, "hy.gz");
+            filesaving::save_file_1D_gzip(ez, mesh->MAX_Z, main_dir, "ez.gz");
 
-            fs->save_file_1D_gzip(a2, mesh->MAX_Z, main_dir, "vecpot2.gz");
+            filesaving::save_file_1D_gzip(a2, mesh->MAX_Z, main_dir, "vecpot2.gz");
         }
 
     }
@@ -605,12 +591,12 @@ void Solver::SaveOutput(int k, std::string file)
         electrostatic_energy *= 0.5*mesh->dz;
 
         FILE *output;
-        output = fs->open_file("a+", main_dir, file.c_str());
+        output = filesaving::open_file("a+", main_dir, file.c_str());
         fprintf(output, "%06d|%16.8e|", k, ez[mesh->MAX_Z-1]);
         for (int sp = 0; sp < NUM_SP; sp++)
             fprintf(output, " %16.8e|", plasma_energy[sp]);
         fprintf(output, "%16.8e|%16.8e|%16.8e|%16.8e|\n", electrostatic_energy, laser_energy, em_flux, mymath::sum(plasma_energy, NUM_SP)+electrostatic_energy+laser_energy-em_flux);
-        fs->close_file(output);
+        filesaving::close_file(output);
 
         if (k==0) plasma_energy_0 = mymath::sum(plasma_energy, NUM_SP);
     }
@@ -619,14 +605,14 @@ void Solver::SaveOutput(int k, std::string file)
 void Solver::SaveResults()
 {
     FILE *en_out;
-    en_out = fs->open_file("a+", "", "energy.txt");
+    en_out = filesaving::open_file("a+", "", "energy.txt");
     double plasma_energy_1 = mymath::sum(plasma_energy, NUM_SP)+electrostatic_energy+laser_energy;
     fprintf(en_out, "%.8g\t%.8g\t%.8g\n", plasma_energy_0, plasma_energy_1, (plasma_energy_1-plasma_energy_0)/(0.5));
-    fs->close_file(en_out);
+    filesaving::close_file(en_out);
 
-    en_out = fs->open_file("a+", "", "energy2.txt");
+    en_out = filesaving::open_file("a+", "", "energy2.txt");
     fprintf(en_out, "%.8g\t", (plasma_energy_1-plasma_energy_0)/(0.5));
-    fs->close_file(en_out);
+    filesaving::close_file(en_out);
 }
 
 bool Solver::SetNotNegative(pyinput *in, std::string name, int *var)

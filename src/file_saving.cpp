@@ -7,22 +7,16 @@
 
 /**
  * \file file_saving.cpp
- * \brief The source file which implements the methods of the FileSaving class
+ * \brief The source file which implements some methods for convenient work with files
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
  */
 
-#include"file_saving.h"
+#include "file_saving.h"
 
-FileSaving::FileSaving()
-{
-}
+namespace filesaving {
 
-FileSaving::~FileSaving()
-{
-}
-
-FILE* FileSaving::open_file(const char *mode, const char *main_dir, const char *name, ...)
+FILE* open_file(const char *mode, const char *main_dir, const char *name, ...)
 {
     char temp[512];
     strcpy(temp, main_dir);
@@ -40,16 +34,16 @@ FILE* FileSaving::open_file(const char *mode, const char *main_dir, const char *
     return fp;
 }
 
-void FileSaving::close_file(FILE *file)
+void close_file(FILE *file)
 {
     fclose(file);
 }
 
 // when creating directory put "/" at the end of its name
-void FileSaving::create_dir(char *out, const char *main_dir, const char *dir, ...)
+void create_dir(char *out, const char *main_dir, const char *dir, ...)
 {
     char command[512];
-#if SYSTEM==0
+#ifdef _WIN32
     sprintf(command, "del ");
 #else
     sprintf(command, "rm -rf ");
@@ -61,7 +55,7 @@ void FileSaving::create_dir(char *out, const char *main_dir, const char *dir, ..
 
     strcat(command, main_dir);
     strcat(command, temp);
-#if SYSTEM==0
+#ifdef _WIN32
     {
         char args[10] = " /q";
         strcat(command, args);
@@ -72,7 +66,7 @@ void FileSaving::create_dir(char *out, const char *main_dir, const char *dir, ..
 
     system(command);
 
-#if SYSTEM==0
+#ifdef _WIN32
     sprintf(command, "mkdir ");
     strcat(command, main_dir);
 #else
@@ -80,13 +74,13 @@ void FileSaving::create_dir(char *out, const char *main_dir, const char *dir, ..
 #endif
     strcat(command, temp);
 
-#if SYSTEM==0
+#ifdef _WIN32
     std::cout << command << std::endl;
 #else
     std::cout << "mkdir " << command << std::endl;
 #endif
 
-#if SYSTEM==0
+#ifdef _WIN32
     system(command);
 #else
     mkdir(command, 0777);
@@ -98,10 +92,10 @@ void FileSaving::create_dir(char *out, const char *main_dir, const char *dir, ..
 }
 
 // when creating directory put "/" at the end of its name
-void FileSaving::create_dir(const char *main_dir, const char *dir, ...)
+void create_dir(const char *main_dir, const char *dir, ...)
 {
     char command[512];
-#if SYSTEM==0
+#ifdef _WIN32
     sprintf(command, "del ");
 #else
     sprintf(command, "rm -rf ");
@@ -113,7 +107,7 @@ void FileSaving::create_dir(const char *main_dir, const char *dir, ...)
 
     strcat(command, main_dir);
     strcat(command, temp);
-#if SYSTEM==0
+#ifdef _WIN32
     {
         char args[10] = " /q";
         strcat(command, args);
@@ -124,7 +118,7 @@ void FileSaving::create_dir(const char *main_dir, const char *dir, ...)
 
     system(command);
 
-#if SYSTEM==0
+#ifdef _WIN32
     sprintf(command, "mkdir ");
     strcat(command, main_dir);
 #else
@@ -132,13 +126,13 @@ void FileSaving::create_dir(const char *main_dir, const char *dir, ...)
 #endif
     strcat(command, temp);
 
-#if SYSTEM==0
+#ifdef _WIN32
     std::cout << command << std::endl;
 #else
     std::cout << "mkdir " << command << std::endl;
 #endif
 
-#if SYSTEM==0
+#ifdef _WIN32
     system(command);
 #else
     mkdir(command, 0777);
@@ -147,7 +141,7 @@ void FileSaving::create_dir(const char *main_dir, const char *dir, ...)
     va_end(var);
 }
 
-void FileSaving::save_file_1D(float *a, const int num, const char *main_dir, const char *name, ...)
+void save_file_1D(float *a, const int num, const char *main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -167,7 +161,7 @@ void FileSaving::save_file_1D(float *a, const int num, const char *main_dir, con
     va_end(var);
 }
 
-void FileSaving::save_file_1D(float *a, const int num, const int step, const char *main_dir, const char *name, ...)
+void save_file_1D(float *a, const int num, const int step, const char *main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -186,7 +180,7 @@ void FileSaving::save_file_1D(float *a, const int num, const int step, const cha
     va_end(var);
 }
 
-void FileSaving::save_file_1D(double *a, const int num, const char *main_dir, const char *name, ...)
+void save_file_1D(double *a, const int num, const char *main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -206,7 +200,7 @@ void FileSaving::save_file_1D(double *a, const int num, const char *main_dir, co
     va_end(var);
 }
 
-void FileSaving::save_file_1D(double *a, const int num, const int step, const char *main_dir, const char *name, ...)
+void save_file_1D(double *a, const int num, const int step, const char *main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -224,7 +218,7 @@ void FileSaving::save_file_1D(double *a, const int num, const int step, const ch
     va_end(var);
 }
 
-void FileSaving::save_file_1D(int *a, const int num, const char *main_dir, const char *name, ...)
+void save_file_1D(int *a, const int num, const char *main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -243,7 +237,7 @@ void FileSaving::save_file_1D(int *a, const int num, const char *main_dir, const
     va_end(var);
 }
 
-void FileSaving::save_file_1D(int *a, const int num, const int step, const char *main_dir, const char *name, ...)
+void save_file_1D(int *a, const int num, const int step, const char *main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -261,7 +255,7 @@ void FileSaving::save_file_1D(int *a, const int num, const int step, const char 
     va_end(var);
 }
 
-void FileSaving::save_file_2D(double *a, int columns, int strings, const char *main_dir, const char *name, ...)
+void save_file_2D(double *a, int columns, int strings, const char *main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -284,7 +278,7 @@ void FileSaving::save_file_2D(double *a, int columns, int strings, const char *m
     va_end(var);
 }
 
-void FileSaving::save_file_2D_transpose(double *a, int columns, int strings, const char *main_dir, const char *name, ...)
+void save_file_2D_transpose(double *a, int columns, int strings, const char *main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -305,3 +299,5 @@ void FileSaving::save_file_2D_transpose(double *a, int columns, int strings, con
 
     va_end(var);
 }
+
+} // namespace filesaving
