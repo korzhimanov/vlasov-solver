@@ -7,7 +7,7 @@
 
 /**
  * \file mesh.h
- * \brief The header file which defines Mesh class
+ * \brief The header file which defines Mesh struct
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
  */
@@ -16,18 +16,13 @@
 #define MESH_H
 
 /**
- * /class Mesh
- * The class implements mesh parameters
+ * /struct Mesh
+ * The structure for mesh parameters
 */
-class Mesh
+struct Mesh
 {
-    public:
-        double dz, dt, dt_dz;
-        int MAX_Z, MAX_T;
-
-    public:
-        Mesh();
-        virtual ~Mesh();
+    double dz, dt, dt_dz;
+    int MAX_Z, MAX_T;
 };
 
 #endif // MESH_H
