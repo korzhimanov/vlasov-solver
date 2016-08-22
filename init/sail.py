@@ -24,7 +24,6 @@ THETA = 0 #PI/4 # incident angle for laser pulse
 
 ## PLASMA PARAMETERS
 
-N_0 = 30 # overcritical parameter
 NUM_SP = 3 # number of species
 
 ## SPECIE 0
@@ -35,7 +34,7 @@ dp_0 = 0.01 # step size for momentum (relative to Mc)
 T_init_0 = 0.1/511 # initial temperature (relative to rest energy)
 MEAN_P_0 = 0. # mean momentum (in Mc)
 def PROFILE_0 (z):
-	return Block(z, 2*ppw, (2+foil)*ppw)
+	return 30*Block(z, 2*ppw, (2+foil)*ppw)
 
 ## SPECIE 1
 MASS_1   = 55.8*1835.3 # mass of the specie (relative to electron one)
@@ -45,7 +44,7 @@ dp_1 = 0.002 # step size for momentum (relative to Mc)
 T_init_1 = 2e-5 # initial temperature (relative to rest energy)
 MEAN_P_1 = 0. # mean momentum (in Mc)
 def PROFILE_1 (z):
-	return Block(z, 2*ppw+position, 2*ppw+position+thickness)
+	return 30*Block(z, 2*ppw+position, 2*ppw+position+thickness)
 
 ## SPECIE 2
 MASS_2   = 197*1835.3 # mass of the specie (relative to electron one)
@@ -63,7 +62,6 @@ def FIXED_IONS_PROFILE (z):
 
 ## PULSE PARAMETERS
 
-A = 50 # electromagnetic pulse amplitude
 t_rise = dt # pulse rising time (only for trapezeidal and sin squared slopes)
 t_length = 5*2*PI # pulse duration
 t_delay = t_length # delay before pulse appearing
@@ -71,9 +69,9 @@ source = 10 # the position of a source of an electromagnetic wave in respect to 
 
 def PULSE_X(t):
 	#return A*Block(t, t_delay, t_delay + t_length)*sin(t - t_delay) # a slope of the laser pulse
-	return A*exp(-sqr((t-t_delay)/t_length*2))*cos(t) # a slope of a laser pulse
+	return 50*exp(-sqr((t-t_delay)/t_length*2))*cos(t) # a slope of a laser pulse
 def PULSE_Y(t):
-	return A*exp(-sqr((t-t_delay)/t_length*2))*sin(t) # a slope of a laser pulse
+	return 50*exp(-sqr((t-t_delay)/t_length*2))*sin(t) # a slope of a laser pulse
 
 ## TEST PARTICLE PARAMETERS
 
