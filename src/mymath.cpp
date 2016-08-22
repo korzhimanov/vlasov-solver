@@ -7,30 +7,26 @@
 
 /**
  * \file mymath.cpp
- * \brief The source file which implements the methods of the Mymath class
+ * \brief The source file which implements some mathematical functions
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
  */
 
 #include "mymath.h"
 
-MyMath::MyMath()
-{
-}
+namespace mymath {
 
-MyMath::~MyMath()
-{
-}
-
-void MyMath::zeros(double *a, const int number, const int step)
+void zeros(double *a, const int number, const int step)
 {
     double *t = a, *until = a + number*step;
     for (; t < until; t += step) *t = 0.;
 }
 
-double MyMath::sum(double *a, const int number, const int step)
+double sum(double *a, const int number, const int step)
 {
     double tmp = *a, *t = a+1, *until = a + number*step;
     for (; t < until; t += step) tmp += *t;
     return tmp;
 }
+
+} // namespace mymath

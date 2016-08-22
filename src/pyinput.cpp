@@ -14,8 +14,6 @@
 
 #include "pyinput.h"
 
-using namespace std;
-
 pyinput::pyinput()
 {
     Py_Initialize();
@@ -34,28 +32,28 @@ pyinput::~pyinput()
 /**
  * \todo Add error output
  */
-void pyinput::ReadFile(string filename)
+void pyinput::ReadFile(std::string filename)
 {
     f = fopen(filename.c_str(), "r");
     PyRun_SimpleFile(f, filename.c_str());
 }
 
-int pyinput::GetInt(string name)
+int pyinput::GetInt(std::string name)
 {
     return PyInt_AsLong(PyDict_GetItemString(main_dict, name.c_str()));
 }
 
-double pyinput::GetDouble(string name)
+double pyinput::GetDouble(std::string name)
 {
     return PyFloat_AsDouble(PyDict_GetItemString(main_dict, name.c_str()));
 }
 
-string pyinput::GetString(string name)
+std::string pyinput::GetString(std::string name)
 {
-    return string(PyString_AsString(PyDict_GetItemString(main_dict, name.c_str())));
+    return std::string(PyString_AsString(PyDict_GetItemString(main_dict, name.c_str())));
 }
 
-pFunc pyinput::GetFunc(string name)
+pFunc pyinput::GetFunc(std::string name)
 {
     pFunc func(PyDict_GetItemString(main_dict, name.c_str()));
     return func;

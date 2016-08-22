@@ -25,8 +25,6 @@
 #include <iomanip>
 #include <ctime>
 
-using namespace std;
-
 double invcps = 1./(double)CLOCKS_PER_SEC;
 double get_time()
 {
@@ -39,7 +37,7 @@ double get_time()
 
 void WrongArguments()
 {
-    cout << "Wrong arguments. Type -h for help." << endl; exit(-1);
+    std::cout << "Wrong arguments. Type -h for help." << std::endl; exit(-1);
 }
 
 int main(int argc, char **argv)
@@ -63,7 +61,7 @@ int main(int argc, char **argv)
                     strcpy(input_file_name, argv[++i]);
                 else
                     WrongArguments();
-                cout << "Input file name has been setted to " << argv[i] << endl;
+                std::cout << "Input file name has been setted to " << argv[i] << std::endl;
                 i++; continue;
             }
             if (!strcmp(argv[i], "-o"))
@@ -72,15 +70,15 @@ int main(int argc, char **argv)
                     strcpy(output_folder_name, argv[++i]);
                 else
                     WrongArguments();
-                cout << "Output folder name has been setted to " << argv[i] << endl;
+                std::cout << "Output folder name has been setted to " << argv[i] << std::endl;
                 i++; continue;
             }
             if (!strcmp(argv[i], "-h"))
             {
-                cout << "Usage: vlasov [OPTION...]" << endl;
-                cout << setw(20) << left << "  -i <name>" << " defines an arbitrary input file to be used" << endl;
-                cout << setw(20) << left << "  -o <name>" << " defines an arbitrary output folder to be used" << endl;
-                cout << setw(20) << left << "  -h" << " shows this help" << endl;
+                std::cout << "Usage: vlasov [OPTION...]" << std::endl;
+                std::cout << std::setw(20) << std::left << "  -i <name>" << "defines an arbitrary input file to be used" << std::endl;
+                std::cout << std::setw(20) << std::left << "  -o <name>" << "defines an arbitrary output folder to be used" << std::endl;
+                std::cout << std::setw(20) << std::left << "  -h" << "shows this help" << std::endl;
                 exit(0);
             }
             WrongArguments();
@@ -100,77 +98,77 @@ int main(int argc, char **argv)
     S.InitOutput("output");
 
     double t0 = get_time();
-    cout << setw(10) << "LongField" << setw(11) << "TransField" << setw(10) << "FieldGen" << setw(10) << "DstrFunc" << setw(10) << "Particles" << setw(10) << "SvFields" << setw(10) << "SvConcs" << setw(10) << "SvDstr" << setw(10) << "SvOutput" << setw(10) << "Step" << setw(20) << "Passed/ Estimated" << endl;
+    std::cout << std::setw(10) << "LongField" << std::setw(11) << "TransField" << std::setw(10) << "FieldGen" << std::setw(10) << "DstrFunc" << std::setw(10) << "Particles" << std::setw(10) << "SvFields" << std::setw(10) << "SvConcs" << std::setw(10) << "SvDstr" << std::setw(10) << "SvOutput" << std::setw(10) << "Step" << std::setw(20) << "Passed/ Estimated" << std::endl;
 
     double t1, t2, t;
-    cout << fixed << setprecision(4);
+    std::cout << std::fixed << std::setprecision(4);
     for (int k = 0; k < S.mesh->MAX_T; k++)
     {
         // LongField
         t = t1 = get_time();
         S.CalcLongFields();
         t2 = get_time();
-        cout << setw(10) << (t2-t1);
+        std::cout << std::setw(10) << (t2-t1);
 
         // TransField
         t1 = t2;
         S.CalcSources( (double)k*S.mesh->dt );
         S.CalcTransFields();
         t2 = get_time();
-        cout << setw(11) << (t2-t1);
+        std::cout << std::setw(11) << (t2-t1);
 
         // FieldGen
         t1 = t2;
         S.FieldGeneration();
         t2 = get_time();
-        cout << setw(10) << (t2-t1);
+        std::cout << std::setw(10) << (t2-t1);
 
         // DstrFunc
         t1 = t2;
         S.CalcDstrFunc();
         t2 = get_time();
-        cout << setw(10) << (t2-t1);
+        std::cout << std::setw(10) << (t2-t1);
 
         // Particles
         t1 = t2;
         if (S.NUM_PRT > 0) S.MoveParticles();
         t2 = get_time();
-        cout << setw(10) << (t2-t1);
+        std::cout << std::setw(10) << (t2-t1);
 
         // SvFields
         t1 = t2;
         S.SaveFields( k );
         t2 = get_time();
-        cout << setw(10) << (t2-t1);
+        std::cout << std::setw(10) << (t2-t1);
 
         // SvConcs
         t1 = t2;
         S.SaveConcs( k );
         t2 = get_time();
-        cout << setw(10) << (t2-t1);
+        std::cout << std::setw(10) << (t2-t1);
 
         // SvDstr
         t1 = t2;
         S.SaveDstrFunc( k );
         t2 = get_time();
-        cout << setw(10) << (t2-t1);
+        std::cout << std::setw(10) << (t2-t1);
 
         // Output
         t1 = t2;
         //S.SaveOutput( k, "output");
         t2 = get_time();
-        cout << setw(10) << (t2-t1);
-        cout << setw(10) << (t2-t );
-        cout << setprecision(2);
-        cout << setw(9) << (t2-t0) << "/ " << (t2-t0)/(k+1)*(S.mesh->MAX_T) << endl;
-        cout << setprecision(4);
+        std::cout << std::setw(10) << (t2-t1);
+        std::cout << std::setw(10) << (t2-t );
+        std::cout << std::setprecision(2);
+        std::cout << std::setw(9) << (t2-t0) << "/ " << (t2-t0)/(k+1)*(S.mesh->MAX_T) << std::endl;
+        std::cout << std::setprecision(4);
     }
 
     //S.SaveResults();
 
-    cout << "Done!" << endl;
+    std::cout << "Done!" << std::endl;
     t = get_time();
-    cout << "Full time: " << (t-t0) << " s (" << (t-t0)/S.mesh->MAX_T << " s per iteration)" << endl;
+    std::cout << "Full time: " << (t-t0) << " s (" << (t-t0)/S.mesh->MAX_T << " s per iteration)" << std::endl;
 
     return 0;
 }

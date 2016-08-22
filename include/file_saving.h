@@ -24,9 +24,6 @@
 #include <iostream>
 #include <fstream>
 #include <zlib.h>
-
-using namespace std;
-
 #include <sys/stat.h>
 
 /**
@@ -69,7 +66,7 @@ void FileSaving::save_file_1D_bin(Type *a, const int num, const char *main_dir, 
     vsprintf(name1, name, var);
     strcat(temp, name1);
 
-    ofstream out(temp, ios_base::binary|ios_base::app|ios_base::out);
+    std::ofstream out(temp, std::ios_base::binary|std::ios_base::app|std::ios_base::out);
     out.write((char*)a, num*sizeof(Type));
     out.close();
 

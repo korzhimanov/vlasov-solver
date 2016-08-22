@@ -16,8 +16,6 @@
 #include <cstdarg>
 #include <iostream>
 
-using namespace std;
-
 pFunc::pFunc(PyObject* pObj)
 {
     function = pObj;

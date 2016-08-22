@@ -32,8 +32,6 @@
 #include <gsl/gsl_const_mksa.h>
 #include <gsl/gsl_sf_synchrotron.h>
 
-using namespace std;
-
 /**
  * /class PFC
  * The class implements vlasov solver based on PFC scheme
@@ -95,25 +93,25 @@ public:
     // saves input information
     void SaveInput(FILE *input);
     // saves output information
-    void SaveConcentrationTxt(string filename);
-    void SaveConcentrationBin(string filename);
-    void SaveConcentrationGZip(string filename);
-    void SaveDstrFunctionTxt(string filename);
-    void SaveDstrFunctionBin(string filename);
-    void SaveDstrFunctionGZip(string filename);
-    void SaveEmitRadiationTxt(string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
-    void SaveEmitRadiationBin(string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
-    void SaveEmitRadiationGZip(string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
+    void SaveConcentrationTxt(std::string filename);
+    void SaveConcentrationBin(std::string filename);
+    void SaveConcentrationGZip(std::string filename);
+    void SaveDstrFunctionTxt(std::string filename);
+    void SaveDstrFunctionBin(std::string filename);
+    void SaveDstrFunctionGZip(std::string filename);
+    void SaveEmitRadiationTxt(std::string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
+    void SaveEmitRadiationBin(std::string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
+    void SaveEmitRadiationGZip(std::string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
     // calculates kinetic energy of particles
     double KineticEnergy(double* ax, double *ay);
     double KineticEnergy(double* ax, double *ay, int left_bound, int right_bound);
 
 private:
 //------miscellaneous--------------------------------------------------
-    void SetNotNegative(pyinput *in, string name, int *var);
-    void SetPositive(pyinput *in, string name, int *var);
-    void SetPositive(pyinput *in, string name, double *var);
-    void SetFunction(pyinput *in, string name, pFunc &F);
+    void SetNotNegative(pyinput *in, std::string name, int *var);
+    void SetPositive(pyinput *in, std::string name, int *var);
+    void SetPositive(pyinput *in, std::string name, double *var);
+    void SetFunction(pyinput *in, std::string name, pFunc &F);
     void CalcConcDstr(float* n);
     double CalcEmitRadiation(double freq, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
 };

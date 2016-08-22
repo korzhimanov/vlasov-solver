@@ -35,22 +35,22 @@ PFC::~PFC()
     delete fs;
 }
 
-void PFC::SetNotNegative(pyinput *in, string name, int *var)
+void PFC::SetNotNegative(pyinput *in, std::string name, int *var)
 {
     *var = in->GetInt(name);
-    if ( *var < 0 ) cout << name + " mustnot be negative" << endl;
+    if ( *var < 0 ) std::cout << name + " mustnot be negative" << std::endl;
 }
 
-void PFC::SetPositive(pyinput *in, string name, int *var)
+void PFC::SetPositive(pyinput *in, std::string name, int *var)
 {
     *var = in->GetInt(name);
-    if ( *var <= 0 ) cout << name + " must be positive" << endl;
+    if ( *var <= 0 ) std::cout << name + " must be positive" << std::endl;
 }
 
-void PFC::SetPositive(pyinput *in, string name, double *var)
+void PFC::SetPositive(pyinput *in, std::string name, double *var)
 {
     *var = in->GetDouble(name);
-    if ( *var <= 0. ) cout << name + " must be positive" << endl;
+    if ( *var <= 0. ) std::cout << name + " must be positive" << std::endl;
 }
 
 void PFC::Init(int particle_type, pyinput *in, Mesh *grid)
@@ -68,13 +68,13 @@ void PFC::Init(int particle_type, pyinput *in, Mesh *grid)
     MEAN_P =     0.; sprintf(tmp,      "MEAN_P_%d", type); MEAN_P = in->GetDouble(tmp);
     dp =       0.01; sprintf(tmp,          "dp_%d", type); SetPositive(in, tmp, &dp);
     if (fabs(MEAN_P) > 0.5*MAX_P*dp)
-        cout << "WARNING! Mean momentum of " << type << " particle type is greater than maximal momentum of grid." << endl;
+        std::cout << "WARNING! Mean momentum of " << type << " particle type is greater than maximal momentum of grid." << std::endl;
     if ((MEAN_P != 0.) && (fabs(MEAN_P) < dp))
-        cout << "WARNING! Mean momentum of " << type << " particle type is less than momentum grid step." << endl;
+        std::cout << "WARNING! Mean momentum of " << type << " particle type is less than momentum grid step." << std::endl;
     dp2 =     dp*dp;
     T_init =   0.02; sprintf(tmp,      "T_init_%d", type); SetPositive(in, tmp, &T_init);
     if (T_init < 0.5*dp2/MASS)
-        cout << "WARNING! Temperature of " << type << " particle type cannot be resolved by momentum grid step." << endl;
+        std::cout << "WARNING! Temperature of " << type << " particle type cannot be resolved by momentum grid step." << std::endl;
     double THETA = in->GetDouble("THETA");
     if (THETA >= 0. && THETA < M_PI/2)
     {
@@ -82,7 +82,7 @@ void PFC::Init(int particle_type, pyinput *in, Mesh *grid)
         N_0 = 1./(cos(THETA)*cos(THETA)*cos(THETA));
     }
     else
-        cout << "ERROR! Invalid incident angle! It should be between 0 and pi/2." << endl;
+        std::cout << "ERROR! Invalid incident angle! It should be between 0 and pi/2." << std::endl;
     delete[] tmp;
 
     p  = new double[MAX_P];
@@ -362,7 +362,7 @@ double PFC::KineticEnergy(double* ax, double* ay, int left_bound, int right_boun
     return energy * .5 * fabs(CHARGE) * MASS * N_0 * dp * mesh->dz;
 }
 
-void PFC::SaveConcentrationTxt(string filename)
+void PFC::SaveConcentrationTxt(std::string filename)
 {
     float *n = new float[mesh->MAX_Z];
 
@@ -373,20 +373,20 @@ void PFC::SaveConcentrationTxt(string filename)
     delete[] n;
 }
 
-void PFC::SaveConcentrationBin(string filename)
+void PFC::SaveConcentrationBin(std::string filename)
 {
     float *n = new float[mesh->MAX_Z];
 
     CalcConcDstr(n);
 
-    ofstream out((filename+".bin").c_str(), ios_base::binary|ios_base::app);
+    std::ofstream out((filename+".bin").c_str(), std::ios_base::binary|std::ios_base::app);
     out.write((char*)n, mesh->MAX_Z*sizeof(float));
     out.close();
 
     delete[] n;
 }
 
-void PFC::SaveConcentrationGZip(string filename)
+void PFC::SaveConcentrationGZip(std::string filename)
 {
     float *n = new float[mesh->MAX_Z];
 
@@ -399,26 +399,26 @@ void PFC::SaveConcentrationGZip(string filename)
     delete[] n;
 }
 
-void PFC::SaveDstrFunctionTxt(string filename)
+void PFC::SaveDstrFunctionTxt(std::string filename)
 {
     fs->save_file_2D_transpose(f1, MAX_P, mesh->MAX_Z, "", (filename+".txt").c_str());
 }
 
-void PFC::SaveDstrFunctionBin(string filename)
+void PFC::SaveDstrFunctionBin(std::string filename)
 {
-    ofstream out((filename+".bin").c_str(), ios_base::binary);
+    std::ofstream out((filename+".bin").c_str(), std::ios_base::binary);
     out.write((char*)f1, MAX_P*mesh->MAX_Z*sizeof(double));
     out.close();
 }
 
-void PFC::SaveDstrFunctionGZip(string filename)
+void PFC::SaveDstrFunctionGZip(std::string filename)
 {
     gzFile out = gzopen((filename+".gz").c_str(), "wb");
     gzwrite(out, (char*)f1, MAX_P*mesh->MAX_Z*sizeof(double));
     gzclose(out);
 }
 
-void PFC::SaveEmitRadiationTxt(string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2)
+void PFC::SaveEmitRadiationTxt(std::string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2)
 {
     double *I = new double[max_harmonic/dn+1];
     I[0] = 0.;
@@ -433,7 +433,7 @@ void PFC::SaveEmitRadiationTxt(string filename, int max_harmonic, int dn, double
     delete[] I;
 }
 
-void PFC::SaveEmitRadiationBin(string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2)
+void PFC::SaveEmitRadiationBin(std::string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2)
 {
     double *I = new double[max_harmonic/dn+1];
     I[0] = 0.;
@@ -443,7 +443,7 @@ void PFC::SaveEmitRadiationBin(string filename, int max_harmonic, int dn, double
         I[n/dn] = CalcEmitRadiation(double(n), fdtd, ez, ax, ay, a2)*dt;
     }
 
-    ofstream out((filename+".bin").c_str(), ios_base::binary);
+    std::ofstream out((filename+".bin").c_str(), std::ios_base::binary);
     out.write((char*)I, (max_harmonic/dn+1)*sizeof(double));
     out.close();
 

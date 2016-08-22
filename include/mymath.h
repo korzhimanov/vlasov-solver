@@ -7,7 +7,7 @@
 
 /**
  * \file mymath.h
- * \brief The header file which defines MyMath class
+ * \brief The header file which defines some mathematical functions
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
  */
@@ -19,32 +19,26 @@
 #include <cmath>
 #include <gsl/gsl_math.h>
 
-/**
- * /class MyMath
- * The class implements some useful mathematical fuctions
-*/
-class MyMath
-{
-public:
-    MyMath();
-    virtual ~MyMath();
-    void zeros(double *a, const int number);
-    void zeros(double *a, const int number, const int step);
+namespace mymath {
 
-    double sum(double *a, const int number, const int step = 1);
+void zeros(double *a, const int number);
+void zeros(double *a, const int number, const int step);
 
-    template<typename Type> Type max(Type *a, const int number, const int step = 1);
-    template<typename Type> Type min(Type *a, const int number, const int step = 1);
-    template<typename Type> Type sqr(Type x);
-};
+double sum(double *a, const int number, const int step = 1);
 
-inline void MyMath::zeros(double *a, const int number)
+template<typename Type> Type max(Type *a, const int number, const int step = 1);
+template<typename Type> Type min(Type *a, const int number, const int step = 1);
+template<typename Type> Type sqr(Type x);
+
+} // namespace mymath
+
+inline void mymath::zeros(double *a, const int number)
 {
     memset(a, 0, sizeof(*a)*number);
 }
 
 template<typename Type>
-Type MyMath::max(Type *a, const int number, const int step)
+Type mymath::max(Type *a, const int number, const int step)
 {
     Type tmp = *a, *t = a+1, *until = a + number*step;
     for (; t < until; t += step) tmp = (tmp < *t) ? *t : tmp;
@@ -52,7 +46,7 @@ Type MyMath::max(Type *a, const int number, const int step)
 }
 
 template<typename Type>
-Type MyMath::min(Type *a, const int number, const int step)
+Type mymath::min(Type *a, const int number, const int step)
 {
     Type tmp = *a, *t = a+1, *until = a + number*step;
     for (; t < until; t += step) tmp = (tmp > *t) ? *t : tmp;
@@ -60,7 +54,7 @@ Type MyMath::min(Type *a, const int number, const int step)
 }
 
 template<typename Type>
-inline Type MyMath::sqr(Type x)
+inline Type mymath::sqr(Type x)
 {
     return x*x;
 }

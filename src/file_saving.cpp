@@ -33,7 +33,7 @@ FILE* FileSaving::open_file(const char *mode, const char *main_dir, const char *
 
     FILE *fp;
     fp = fopen(temp, mode);
-    if (!fp) cout << "ERROR: Cannot open file " << temp << endl;
+    if (!fp) std::cout << "ERROR: Cannot open file " << temp << std::endl;
 
     va_end(var);
 
@@ -68,7 +68,7 @@ void FileSaving::create_dir(char *out, const char *main_dir, const char *dir, ..
     }
 #endif
 
-    cout << command << endl;
+    std::cout << command << std::endl;
 
     system(command);
 
@@ -81,9 +81,9 @@ void FileSaving::create_dir(char *out, const char *main_dir, const char *dir, ..
     strcat(command, temp);
 
 #if SYSTEM==0
-    cout << command << endl;
+    std::cout << command << std::endl;
 #else
-    cout << "mkdir " << command << endl;
+    std::cout << "mkdir " << command << std::endl;
 #endif
 
 #if SYSTEM==0
@@ -120,7 +120,7 @@ void FileSaving::create_dir(const char *main_dir, const char *dir, ...)
     }
 #endif
 
-    cout << command << endl;
+    std::cout << command << std::endl;
 
     system(command);
 
@@ -133,9 +133,9 @@ void FileSaving::create_dir(const char *main_dir, const char *dir, ...)
     strcat(command, temp);
 
 #if SYSTEM==0
-    cout << command << endl;
+    std::cout << command << std::endl;
 #else
-    cout << "mkdir " << command << endl;
+    std::cout << "mkdir " << command << std::endl;
 #endif
 
 #if SYSTEM==0

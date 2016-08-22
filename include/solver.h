@@ -41,7 +41,6 @@ class Solver
 {
     public:
         FileSaving *fs;
-        MyMath *mm;
         // general parameters
         int ppw; Mesh *mesh;
         double THETA;
@@ -50,10 +49,10 @@ class Solver
         // pulse parameters
         pFunc *pulse_x, *pulse_y;
         // output parameters
-        string output_directory_name;
+        std::string output_directory_name;
         bool save_fields, save_concs, save_dstr;
         int save_dt, save_fields_dt, save_concs_dt, save_dstr_dt;
-        string save_format, save_fields_format, save_concs_format, save_dstr_format;
+        std::string save_format, save_fields_format, save_concs_format, save_dstr_format;
         // particles
         Particle *prt; int NUM_PRT, start_point; double MASS_PRT, CHARGE_PRT, interval;
 
@@ -76,19 +75,19 @@ class Solver
     public:
 //------constructors---------------------------------------------------
         Solver();
-        Solver(string, string);
+        Solver(std::string, std::string);
 //------destructor-----------------------------------------------------
         ~Solver();
 
 //------initialisation-------------------------------------------------
-        int InitVars(string, string);
+        int InitVars(std::string, std::string);
         void AllocMemory();
         void InitFields();
         void InitPlasma(); // initializes plasma distribution
         void InitTestParticles();
         void CreateDirs();
-        void SaveInput(string file);
-        void InitOutput(string file);
+        void SaveInput(std::string file);
+        void InitOutput(std::string file);
 
 //------calculations---------------------------------------------------
         void MoveParticles();
@@ -158,30 +157,29 @@ class Solver
         void SaveConcs(int k); // saving concentarations data in files
         void SaveDstrFunc(int k); // saving distribution functions data in files
         void SavePrtDat(int k); // save particles data
-        void SaveOutput(int k, string file);
+        void SaveOutput(int k, std::string file);
         void SaveResults();
 
     private:
 //------miscellaneous--------------------------------------------------
-        bool SetNotNegative(pyinput *in, string name, int *var);
-        bool SetPositive(pyinput *in, string name, int *var);
-        bool SetPositive(pyinput *in, string name, double *var);
-        bool SetFormat(pyinput *in, string name, string *var);
+        bool SetNotNegative(pyinput *in, std::string name, int *var);
+        bool SetPositive(pyinput *in, std::string name, int *var);
+        bool SetPositive(pyinput *in, std::string name, double *var);
+        bool SetFormat(pyinput *in, std::string name, std::string *var);
 };
 
-Solver::Solver(string file_name = "input.py", string directory_name = "output")
+Solver::Solver(std::string file_name = "input.py", std::string directory_name = "output")
 {
     fs = new FileSaving;
-    mm = new MyMath;
 
     int err = InitVars(file_name, directory_name);
     if( err == 0 )
     {
-        cout << "Initializing succesful!" << endl;
+        std::cout << "Initializing succesful!" << std::endl;
         AllocMemory();
     }
     else
-        cout << "Error! Initializing failed! Returning code is " << err << endl;
+        std::cout << "Error! Initializing failed! Returning code is " << err << std::endl;
 }
 
 Solver::~Solver()
@@ -209,20 +207,19 @@ Solver::~Solver()
 
     delete in;
 
-    delete mm;
     delete fs;
 }
 
-int Solver::InitVars(string file_name, string directory_name)
+int Solver::InitVars(std::string file_name, std::string directory_name)
 {
     output_directory_name = directory_name;
 
     mesh = new Mesh;
     in = new pyinput;
 
-    cout << "Reading input file " << file_name << " ... " << endl;
+    std::cout << "Reading input file " << file_name << " ... " << std::endl;
     in->ReadFile(file_name);
-    cout << "done!" << endl;
+    std::cout << "done!" << std::endl;
 
     int tpi;
     double tpf;
@@ -236,7 +233,7 @@ int Solver::InitVars(string file_name, string directory_name)
     mesh->dt_dz = mesh->dt/mesh->dz;
     THETA = in->GetDouble("THETA");
     if (THETA < 0. && THETA >= 0.5*M_PI)
-        cout << "Invalid incident angle! It should be between 0 and pi/2." << endl;
+        std::cout << "Invalid incident angle! It should be between 0 and pi/2." << std::endl;
 
     pfc = new PFC[NUM_SP];
     for (int sp = 0; sp < NUM_SP; sp++)
@@ -323,10 +320,10 @@ void Solver::InitFields()
 {
     fdtd->Init(mesh, source);
     fdtd->InitPML(int(1./mesh->dz), 10.);
-    mm->zeros(ax, mesh->MAX_Z+1);
-    mm->zeros(ay, mesh->MAX_Z+1);
-    mm->zeros(a2, mesh->MAX_Z+1);
-    mm->zeros(ez, mesh->MAX_Z+1);
+    mymath::zeros(ax, mesh->MAX_Z+1);
+    mymath::zeros(ay, mesh->MAX_Z+1);
+    mymath::zeros(a2, mesh->MAX_Z+1);
+    mymath::zeros(ez, mesh->MAX_Z+1);
 
     em_flux = 0.;
 }
@@ -385,7 +382,7 @@ void Solver::CreateDirs()
         }
 }
 
-void Solver::SaveInput(string file)
+void Solver::SaveInput(std::string file)
 {
     // storing information about input parameters
     FILE *input;
@@ -431,7 +428,7 @@ void Solver::SaveInput(string file)
     fs->close_file(input);
 }
 
-void Solver::InitOutput(string file)
+void Solver::InitOutput(std::string file)
 {
     output = fs->open_file("w+", main_dir, file.c_str());
     fprintf(output, " Step |   Neutrality   |");
@@ -479,7 +476,7 @@ void Solver::SaveFields(int k)
 {
     if (save_fields == true && k%save_fields_dt == 0)
     {
-        string format;
+        std::string format;
         if (save_fields_format == "")
             format = save_format;
         else
@@ -525,7 +522,7 @@ void Solver::SaveConcs(int k)
 {
     if (save_concs == true && k%save_concs_dt == 0)
     {
-        string format;
+        std::string format;
         if (save_concs_format == "")
             format = save_format;
         else
@@ -533,7 +530,7 @@ void Solver::SaveConcs(int k)
 
         for (int sp = 0; sp < NUM_SP; sp++)
         {
-            stringstream ss;
+            std::stringstream ss;
             ss << main_dir << "conc" << sp;
             if (format == "txt")
                 pfc[sp].SaveConcentrationTxt(ss.str());
@@ -551,7 +548,7 @@ void Solver::SaveDstrFunc(int k)
 {
     if (save_dstr == true && k%save_dstr_dt == 0)
     {
-        string format;
+        std::string format;
         if (save_dstr_format == "")
             format = save_format;
         else
@@ -559,8 +556,8 @@ void Solver::SaveDstrFunc(int k)
 
         for (int sp = 0; sp < NUM_SP; sp++)
         {
-            stringstream ss;
-            ss << main_dir << "dstr_func" << sp << "/data" << setfill('0') << setw(8) << k;
+            std::stringstream ss;
+            ss << main_dir << "dstr_func" << sp << "/data" << std::setfill('0') << std::setw(8) << k;
             if (format == "txt")
                 pfc[sp].SaveDstrFunctionTxt(ss.str());
 
@@ -577,7 +574,7 @@ void Solver::SavePrtDat(int k)
 {
     if (NUM_PRT > 0)
     {
-        ofstream *out_file;
+        std::ofstream *out_file;
         for (int i = 0; i < NUM_PRT; i++)
         {
             char file_path[256];
@@ -585,15 +582,15 @@ void Solver::SavePrtDat(int k)
             char file_name[256];
             sprintf(file_name, "particles/particle%06d.txt", i);
             strcat(file_path, file_name);
-            out_file = new ofstream(file_path, ios_base::app);
-            *out_file << prt[i].r[0] << "\t" << prt[i].r[1] << "\t" << prt[i].r[2] << "\t" << prt[i].p[0] << "\t" << prt[i].p[1] << "\t" << prt[i].p[2] << endl;
+            out_file = new std::ofstream(file_path, std::ios_base::app);
+            *out_file << prt[i].r[0] << "\t" << prt[i].r[1] << "\t" << prt[i].r[2] << "\t" << prt[i].p[0] << "\t" << prt[i].p[1] << "\t" << prt[i].p[2] << std::endl;
             out_file->close();
             delete out_file;
         }
     }
 }
 
-void Solver::SaveOutput(int k, string file)
+void Solver::SaveOutput(int k, std::string file)
 {
     if (k%ppw == 0)
     {
@@ -612,10 +609,10 @@ void Solver::SaveOutput(int k, string file)
         fprintf(output, "%06d|%16.8e|", k, ez[mesh->MAX_Z-1]);
         for (int sp = 0; sp < NUM_SP; sp++)
             fprintf(output, " %16.8e|", plasma_energy[sp]);
-        fprintf(output, "%16.8e|%16.8e|%16.8e|%16.8e|\n", electrostatic_energy, laser_energy, em_flux, mm->sum(plasma_energy, NUM_SP)+electrostatic_energy+laser_energy-em_flux);
+        fprintf(output, "%16.8e|%16.8e|%16.8e|%16.8e|\n", electrostatic_energy, laser_energy, em_flux, mymath::sum(plasma_energy, NUM_SP)+electrostatic_energy+laser_energy-em_flux);
         fs->close_file(output);
 
-        if (k==0) plasma_energy_0 = mm->sum(plasma_energy, NUM_SP);
+        if (k==0) plasma_energy_0 = mymath::sum(plasma_energy, NUM_SP);
     }
 }
 
@@ -623,7 +620,7 @@ void Solver::SaveResults()
 {
     FILE *en_out;
     en_out = fs->open_file("a+", "", "energy.txt");
-    double plasma_energy_1 = mm->sum(plasma_energy, NUM_SP)+electrostatic_energy+laser_energy;
+    double plasma_energy_1 = mymath::sum(plasma_energy, NUM_SP)+electrostatic_energy+laser_energy;
     fprintf(en_out, "%.8g\t%.8g\t%.8g\n", plasma_energy_0, plasma_energy_1, (plasma_energy_1-plasma_energy_0)/(0.5));
     fs->close_file(en_out);
 
@@ -632,32 +629,32 @@ void Solver::SaveResults()
     fs->close_file(en_out);
 }
 
-bool Solver::SetNotNegative(pyinput *in, string name, int *var)
+bool Solver::SetNotNegative(pyinput *in, std::string name, int *var)
 {
     *var = in->GetInt(name);
     if ( *var >= 0 ) return 0;
-    else {cout << name + " mustnot be negative" << endl; return 1;}
+    else {std::cout << name + " mustnot be negative" << std::endl; return 1;}
 }
 
-bool Solver::SetPositive(pyinput *in, string name, int *var)
+bool Solver::SetPositive(pyinput *in, std::string name, int *var)
 {
     *var = in->GetInt(name);
     if ( *var > 0 ) return 0;
-    else {cout << name + " must be positive" << endl; return 1;}
+    else {std::cout << name + " must be positive" << std::endl; return 1;}
 }
 
-bool Solver::SetPositive(pyinput *in, string name, double *var)
+bool Solver::SetPositive(pyinput *in, std::string name, double *var)
 {
     *var = in->GetDouble(name);
     if ( *var > 0. ) return 0;
-    else {cout << name + " must be positive" << endl; return 1;}
+    else {std::cout << name + " must be positive" << std::endl; return 1;}
 }
 
-bool Solver::SetFormat(pyinput *in, string name, string *var)
+bool Solver::SetFormat(pyinput *in, std::string name, std::string *var)
 {
     *var = in->GetString(name);
     if (save_format == "txt" || save_format == "bin" || save_format ==  "gzip") return 0;
-    else {cout << name + " must be either 'txt' or 'bin' or 'gzip'" << endl; return 1;}
+    else {std::cout << name + " must be either 'txt' or 'bin' or 'gzip'" << std::endl; return 1;}
 }
 
 #endif // SOLVER_H

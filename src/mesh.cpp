@@ -18,7 +18,6 @@ Mesh::Mesh()
 {
 }
 
-
 Mesh::~Mesh()
 {
 }
