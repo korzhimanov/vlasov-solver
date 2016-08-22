@@ -49,7 +49,6 @@ class Solver
         int NUM_SP;
         double N_0;
         // pulse parameters
-        double A; // an amplitude of a laser pulse (needed for images)
         pFunc *pulse_x, *pulse_y;
         // output parameters
         string output_directory_name;
@@ -244,7 +243,6 @@ int Solver::InitVars(string file)
 
     pulse_x = new pFunc(in->GetFunc("PULSE_X"));
     pulse_y = new pFunc(in->GetFunc("PULSE_Y"));
-    A = 0.; if ( SetPositive(in, "A", &A) ) return 1300;
     source = 1; if ( SetPositive(in, "source", &source) ) return 1400;
 
     NUM_PRT = 0; if ( SetNotNegative(in, "NUM_PRT", &NUM_PRT) ) return  1600;
@@ -362,9 +360,9 @@ void Solver::CreateDirs()
     if (output_directory_name == "")
     {
         if (SYSTEM == 0)
-            fs->create_dir(main_dir, "", "n0_%.3g_a_%.3g\\", N_0, A);
+            fs->create_dir(main_dir, "", "n0_%.3g\\", N_0);
         else
-            fs->create_dir(main_dir, "", "n0_%.3g_a_%.3g/", N_0, A);
+            fs->create_dir(main_dir, "", "n0_%.3g/", N_0);
     }
     else
     {
@@ -634,11 +632,11 @@ void Solver::SaveResults()
     FILE *en_out;
     en_out = fs->open_file("a+", "", "energy.txt");
     double plasma_energy_1 = mm->sum(plasma_energy, NUM_SP)+electrostatic_energy+laser_energy;
-    fprintf(en_out, "%.8g\t%.8g\t%.8g\t%.8g\t%.8g\n", N_0, A, plasma_energy_0, plasma_energy_1, (plasma_energy_1-plasma_energy_0)/(0.5*A*A));
+    fprintf(en_out, "%.8g\t%.8g\t%.8g\t%.8g\n", N_0, plasma_energy_0, plasma_energy_1, (plasma_energy_1-plasma_energy_0)/(0.5));
     fs->close_file(en_out);
 
     en_out = fs->open_file("a+", "", "energy2.txt");
-    fprintf(en_out, "%.8g\t", (plasma_energy_1-plasma_energy_0)/(0.5*A*A));
+    fprintf(en_out, "%.8g\t", (plasma_energy_1-plasma_energy_0)/(0.5));
     fs->close_file(en_out);
 }
 
