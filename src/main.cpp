@@ -37,7 +37,8 @@ double get_time()
 
 void WrongArguments()
 {
-    std::cout << "Wrong arguments. Type -h for help." << std::endl; exit(-1);
+    std::cout << "Wrong arguments. Type -h for help." << std::endl;
+    exit(-1);
 }
 
 int main(int argc, char **argv)
