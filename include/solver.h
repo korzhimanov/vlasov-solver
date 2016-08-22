@@ -77,12 +77,12 @@ class Solver
     public:
 //------constructors---------------------------------------------------
         Solver();
-        Solver(string file);
+        Solver(string, string);
 //------destructor-----------------------------------------------------
         ~Solver();
 
 //------initialisation-------------------------------------------------
-        int InitVars(string file);
+        int InitVars(string, string);
         void AllocMemory();
         void InitFields();
         void InitPlasma(); // initializes plasma distribution
@@ -164,12 +164,12 @@ class Solver
         bool SetFormat(pyinput *in, string name, string *var);
 };
 
-Solver::Solver(string file = "input.py")
+Solver::Solver(string file_name = "input.py", string directory_name = "output")
 {
     fs = new FileSaving;
     mm = new MyMath;
 
-    int err = InitVars(file);
+    int err = InitVars(file_name, directory_name);
     if( err == 0 )
     {
         cout << "Initializing succesful!" << endl;
@@ -208,21 +208,23 @@ Solver::~Solver()
     delete fs;
 }
 
-int Solver::InitVars(string file)
+int Solver::InitVars(string file_name, string directory_name)
 {
+    output_directory_name = directory_name;
+
     mesh = new Mesh;
     in = new pyinput;
 
-    cout << "Reading input file " << file << " ... " << endl;
-    in->ReadFile(file);
+    cout << "Reading input file " << file_name << " ... " << endl;
+    in->ReadFile(file_name);
     cout << "done!" << endl;
 
     int tpi;
     double tpf;
 
     ppw    = 16; if ( SetPositive(in,   "ppw",    &ppw) ) return 100;
-    tpi   = 32; if ( SetPositive(in, "MAX_Z",     &tpi) ) return 200; mesh->MAX_Z = tpi;
-    tpi   = 32; if ( SetNotNegative(in, "MAX_T",  &tpi) ) return 210; mesh->MAX_T = tpi;
+    tpi    = 32; if ( SetPositive(in, "MAX_Z",    &tpi) ) return 200; mesh->MAX_Z = tpi;
+    tpi    = 32; if ( SetNotNegative(in, "MAX_T", &tpi) ) return 210; mesh->MAX_T = tpi;
     NUM_SP =  1; if ( SetPositive(in,"NUM_SP", &NUM_SP) ) return 300;
     tpf = 2.*M_PI/ppw; if ( SetPositive(in, "dz", &tpf) ) return 400; mesh->dz = tpf;
     tpf = 2.*M_PI/ppw; if ( SetPositive(in, "dt", &tpf) ) return 410; mesh->dt = tpf;
@@ -253,8 +255,6 @@ int Solver::InitVars(string file)
         MASS_PRT    = 1.; if ( SetPositive(in,    "MASS_PRT", &MASS_PRT   ) ) return  1630;
         CHARGE_PRT  = in->GetDouble("CHARGE_PRT");
     }
-
-    output_directory_name = in->GetString("output_directory_name");
 
     save_fields = in->GetInt("save_fields");
     save_concs  = in->GetInt("save_concs");
@@ -357,14 +357,6 @@ void Solver::InitTestParticles()
 void Solver::CreateDirs()
 {
     // creating main directory for saving
-    if (output_directory_name == "")
-    {
-        if (SYSTEM == 0)
-            fs->create_dir(main_dir, "", "n0_%.3g\\", N_0);
-        else
-            fs->create_dir(main_dir, "", "n0_%.3g/", N_0);
-    }
-    else
     {
         if (SYSTEM == 0)
             fs->create_dir(main_dir, "", (output_directory_name + "\\").c_str());

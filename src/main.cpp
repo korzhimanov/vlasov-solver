@@ -47,6 +47,9 @@ int main(int argc, char **argv)
     char input_file_name[512];
     sprintf(input_file_name, "input.py");
 
+    char output_folder_name[512];
+    sprintf(output_folder_name, "output");
+
     if (argc > 1)
     {
         int i = 1;
@@ -61,10 +64,20 @@ int main(int argc, char **argv)
                 cout << "Input file name has been setted to " << argv[i] << endl;
                 i++; continue;
             }
+            if (!strcmp(argv[i], "-o"))
+            {
+                if (argc > i+1)
+                    strcpy(output_folder_name, argv[++i]);
+                else
+                    WrongArguments();
+                cout << "Output folder name has been setted to " << argv[i] << endl;
+                i++; continue;
+            }
             if (!strcmp(argv[i], "-h"))
             {
                 cout << "Usage: vlasov [OPTION...]" << endl;
                 cout << setw(20) << left << "  -i <name>" << "defines an arbitrary input file to be used" << endl;
+                cout << setw(20) << left << "  -i <name>" << "defines an arbitrary output folder to be used" << endl;
                 cout << setw(20) << left << "  -h" << "shows this help" << endl;
                 exit(0);
             }
@@ -73,7 +86,7 @@ int main(int argc, char **argv)
         while (i < argc);
     }
 
-    Solver S(input_file_name);
+    Solver S(input_file_name, output_folder_name);
 
     S.InitFields();
     S.InitPlasma();
