@@ -48,7 +48,9 @@ int main(int argc, char **argv)
     sprintf(input_file_name, "input.py");
 
     char output_folder_name[512];
-    sprintf(output_folder_name, "output");
+    time_t current_time = time(NULL);
+    struct tm * utc_time = gmtime(&current_time);
+    snprintf(output_folder_name, 512, "%d-%02d-%dUTC%02d:%02d:%02d", utc_time->tm_year+1900, utc_time->tm_mon+1, utc_time->tm_mday, utc_time->tm_hour, utc_time->tm_min, utc_time->tm_sec);
 
     if (argc > 1)
     {
@@ -76,9 +78,9 @@ int main(int argc, char **argv)
             if (!strcmp(argv[i], "-h"))
             {
                 cout << "Usage: vlasov [OPTION...]" << endl;
-                cout << setw(20) << left << "  -i <name>" << "defines an arbitrary input file to be used" << endl;
-                cout << setw(20) << left << "  -i <name>" << "defines an arbitrary output folder to be used" << endl;
-                cout << setw(20) << left << "  -h" << "shows this help" << endl;
+                cout << setw(20) << left << "  -i <name>" << " defines an arbitrary input file to be used" << endl;
+                cout << setw(20) << left << "  -o <name>" << " defines an arbitrary output folder to be used" << endl;
+                cout << setw(20) << left << "  -h" << " shows this help" << endl;
                 exit(0);
             }
             WrongArguments();
