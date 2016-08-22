@@ -47,7 +47,6 @@ class Solver
         double THETA;
         // plasma parameters
         int NUM_SP;
-        double N_0;
         // pulse parameters
         pFunc *pulse_x, *pulse_y;
         // output parameters
@@ -101,6 +100,9 @@ class Solver
             fdtd->hyl =   pulse_x->call((double)(t + .5*mesh->dt));
         }
 
+        /**
+         * \todo Change 0.5*pfc->N_0*mesh->dz to a single constant
+         */
         inline void CalcLongFields()
         {
             // calculates longitudinal field
@@ -108,10 +110,10 @@ class Solver
             for (int sp = 0; sp < NUM_SP; sp++)
                 pfc[sp].CalcLongitudinalField(ez);
 
-            ez[0] += 0.5*N_0*mesh->dz*fixed_ions_conc[0];
+            ez[0] += 0.5*pfc->N_0*mesh->dz*fixed_ions_conc[0];
             for (int i = 1; i < mesh->MAX_Z; i++)
-                ez[i] += ez[i-1] + 0.5*N_0*mesh->dz*(fixed_ions_conc[i]+fixed_ions_conc[i-1]);
-            ez[mesh->MAX_Z] += 0.5*N_0*mesh->dz*fixed_ions_conc[mesh->MAX_Z-1];
+                ez[i] += ez[i-1] + 0.5*pfc->N_0*mesh->dz*(fixed_ions_conc[i]+fixed_ions_conc[i-1]);
+            ez[mesh->MAX_Z] += 0.5*pfc->N_0*mesh->dz*fixed_ions_conc[mesh->MAX_Z-1];
         }
 
         inline void CalcTransFields()
@@ -130,16 +132,19 @@ class Solver
             em_flux += fdtd->FluxIn();
         }
 
+        /**
+         * \todo Change 0.5*sin(THETA)*pfc->N_0*mesh->dz to a single constant
+         */
         inline void FieldGeneration()
         {
             // field generation by plasma currents
             for (int sp = 0; sp < NUM_SP; sp++)
                 pfc[sp].CalcCurrent(fdtd, ax, ay, a2);
 
-            fdtd->ey[0] -= 0.5*sin(THETA)*N_0*mesh->dz*fixed_ions_conc[0];
+            fdtd->ey[0] -= 0.5*sin(THETA)*pfc->N_0*mesh->dz*fixed_ions_conc[0];
             for (int i = 1; i < mesh->MAX_Z; i++)
-                fdtd->ey[i] -= 0.5*sin(THETA)*N_0*mesh->dz*(fixed_ions_conc[i]+fixed_ions_conc[i-1]);
-            fdtd->ey[mesh->MAX_Z] -= 0.5*sin(THETA)*N_0*mesh->dz*fixed_ions_conc[mesh->MAX_Z-1];
+                fdtd->ey[i] -= 0.5*sin(THETA)*pfc->N_0*mesh->dz*(fixed_ions_conc[i]+fixed_ions_conc[i-1]);
+            fdtd->ey[mesh->MAX_Z] -= 0.5*sin(THETA)*pfc->N_0*mesh->dz*fixed_ions_conc[mesh->MAX_Z-1];
         }
 
         inline void CalcDstrFunc()
@@ -230,18 +235,14 @@ int Solver::InitVars(string file_name, string directory_name)
     tpf = 2.*M_PI/ppw; if ( SetPositive(in, "dt", &tpf) ) return 410; mesh->dt = tpf;
     mesh->dt_dz = mesh->dt/mesh->dz;
     THETA = in->GetDouble("THETA");
+    if (THETA < 0. && THETA >= 0.5*M_PI)
+        cout << "Invalid incident angle! It should be between 0 and pi/2." << endl;
 
     pfc = new PFC[NUM_SP];
     for (int sp = 0; sp < NUM_SP; sp++)
         pfc[sp].Init(sp, in, mesh);
 
     fixed_ions_profile = new pFunc(in->GetFunc("FIXED_IONS_PROFILE"));
-
-    N_0 = 0.; if ( SetPositive(in,"N_0", &N_0) ) return 1200;
-    if (THETA >= 0. && THETA < M_PI/2)
-        N_0 = N_0/(cos(THETA)*cos(THETA)*cos(THETA));
-    else
-        cout << "Invalid incident angle! It should be between 0 and pi/2." << endl;
 
     pulse_x = new pFunc(in->GetFunc("PULSE_X"));
     pulse_y = new pFunc(in->GetFunc("PULSE_Y"));
@@ -401,7 +402,6 @@ void Solver::SaveInput(string file)
     fprintf(input, "\tTotal running time = %f Waveperiods\n", .5*M_1_PI*mesh->MAX_T*mesh->dt);
 
     fprintf(input, "\nPLASMA PARAMETERS\n\n");
-    fprintf(input, "\tOverdense parameter = %f\n", N_0);
     for (int sp = 0; sp < NUM_SP; sp++)
     {
         fprintf(input, "\n\tSpecies %d\n\n", sp);
@@ -624,7 +624,7 @@ void Solver::SaveResults()
     FILE *en_out;
     en_out = fs->open_file("a+", "", "energy.txt");
     double plasma_energy_1 = mm->sum(plasma_energy, NUM_SP)+electrostatic_energy+laser_energy;
-    fprintf(en_out, "%.8g\t%.8g\t%.8g\t%.8g\n", N_0, plasma_energy_0, plasma_energy_1, (plasma_energy_1-plasma_energy_0)/(0.5));
+    fprintf(en_out, "%.8g\t%.8g\t%.8g\n", plasma_energy_0, plasma_energy_1, (plasma_energy_1-plasma_energy_0)/(0.5));
     fs->close_file(en_out);
 
     en_out = fs->open_file("a+", "", "energy2.txt");

@@ -75,12 +75,11 @@ void PFC::Init(int particle_type, pyinput *in, Mesh *grid)
     T_init =   0.02; sprintf(tmp,      "T_init_%d", type); SetPositive(in, tmp, &T_init);
     if (T_init < 0.5*dp2/MASS)
         cout << "WARNING! Temperature of " << type << " particle type cannot be resolved by momentum grid step." << endl;
-    N_0 =        1.; SetPositive(in, "N_0", &N_0);
     double THETA = in->GetDouble("THETA");
     if (THETA >= 0. && THETA < M_PI/2)
     {
         P0 = tan(THETA);
-        N_0 = N_0/(cos(THETA)*cos(THETA)*cos(THETA));
+        N_0 = 1./(cos(THETA)*cos(THETA)*cos(THETA));
     }
     else
         cout << "ERROR! Invalid incident angle! It should be between 0 and pi/2." << endl;

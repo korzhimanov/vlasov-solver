@@ -31,6 +31,9 @@ pyinput::~pyinput()
     Py_Finalize();
 }
 
+/**
+ * \todo Add error output
+ */
 void pyinput::ReadFile(string filename)
 {
     f = fopen(filename.c_str(), "r");

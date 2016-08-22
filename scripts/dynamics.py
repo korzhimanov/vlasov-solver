@@ -4,12 +4,12 @@
 import numpy as np
 import gzip
 import matplotlib.pyplot as plt
-import input
+from init import sail as inp
 
-data_size = input.MAX_Z
+data_size = inp.MAX_Z
 energy_data_size = 100000
 
-prefix = input.output_directory_name
+prefix = 'output'
 
 fig = plt.figure(figsize=(16, 12))
 
