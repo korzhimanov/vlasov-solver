@@ -48,15 +48,15 @@ void WrongArguments()
 int main(int argc, char **argv)
 {
     char input_file_name[512];
-    sprintf(input_file_name, "input.py");
+    sprintf(input_file_name, "init/default.py");
 
     std::stringstream output_folder_name;
     time_t current_time = time(NULL);
     struct tm * utc_time = gmtime(&current_time);
 
-    output_folder_name << utc_time->tm_year+1900;
+    output_folder_name << utc_time->tm_year+1900 << "-";
     output_folder_name << std::setfill('0') << std::setw(2);
-    output_folder_name << utc_time->tm_mon+1 << utc_time->tm_mday << "UTC" << utc_time->tm_hour << utc_time->tm_min << utc_time->tm_sec;
+    output_folder_name << utc_time->tm_mon+1 << "-" << utc_time->tm_mday << "UTC" << utc_time->tm_hour << ":" << utc_time->tm_min << ":" << utc_time->tm_sec;
 
     if (argc > 1)
     {
