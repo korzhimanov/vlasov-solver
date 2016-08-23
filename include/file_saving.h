@@ -30,8 +30,7 @@ namespace filesaving
 FILE *open_file(const char *mode, std::string main_dir, const char *name, ...);
 void close_file(FILE *file);
 
-void create_dir(char *out, std::string main_dir, const char *dir, ...);
-void create_dir(std::string main_dir, const char *dir, ...);
+void create_dir(std::string);
 
 void save_file_1D(float *a, const int num, std::string main_dir, const char *name, ...);
 void save_file_1D(float *a, const int num, const int step, std::string main_dir, const char *name, ...);

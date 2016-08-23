@@ -14,6 +14,7 @@
 
 #include "file_saving.h"
 #include <string>
+#include <sstream>
 
 namespace filesaving {
 
@@ -41,105 +42,35 @@ void close_file(FILE *file)
 }
 
 // when creating directory put "/" at the end of its name
-void create_dir(char *out, const char *main_dir, const char *dir, ...)
+void create_dir(std::string dn)
 {
-    char command[512];
+    std::stringstream command;
 #ifdef _WIN32
-    sprintf(command, "del ");
+    command << "del ";
 #else
-    sprintf(command, "rm -rf ");
+    command << "rm -rf ";
 #endif
 
-    va_list var; va_start(var, dir);
-    char temp[256];
-    vsprintf(temp, dir, var);
-
-    strcat(command, main_dir);
-    strcat(command, temp);
+    command << dn;
 #ifdef _WIN32
-    {
-        char args[10] = " /q";
-        strcat(command, args);
-    }
+    command << " /q";
 #endif
 
-    std::cout << command << std::endl;
+    std::cout << command.str() << std::endl;
 
-    system(command);
+    system(command.str().c_str());
 
+    command.str( std::string() );
+    command.clear();
 #ifdef _WIN32
-    sprintf(command, "mkdir ");
-    strcat(command, main_dir);
+    command << "mkdir " << dn;
+    std::cout << command.str() << std::endl;
+    system(command.str().c_str());
 #else
-    strcpy(command, main_dir);
+    command << dn;
+    std::cout << "mkdir " << command.str() << std::endl;
+    mkdir(command.str().c_str(), 0755);
 #endif
-    strcat(command, temp);
-
-#ifdef _WIN32
-    std::cout << command << std::endl;
-#else
-    std::cout << "mkdir " << command << std::endl;
-#endif
-
-#ifdef _WIN32
-    system(command);
-#else
-    mkdir(command, 0777);
-#endif
-
-    strcpy(out, temp);
-
-    va_end(var);
-}
-
-// when creating directory put "/" at the end of its name
-void create_dir(std::string main_dir, const char *dir, ...)
-{
-    char command[512];
-#ifdef _WIN32
-    sprintf(command, "del ");
-#else
-    sprintf(command, "rm -rf ");
-#endif
-
-    va_list var; va_start(var, dir);
-    char temp[256];
-    vsprintf(temp, dir, var);
-
-    strcat(command, main_dir.c_str());
-    strcat(command, temp);
-#ifdef _WIN32
-    {
-        char args[10] = " /q";
-        strcat(command, args);
-    }
-#endif
-
-    std::cout << command << std::endl;
-
-    system(command);
-
-#ifdef _WIN32
-    sprintf(command, "mkdir ");
-    strcat(command, main_dir.c_str());
-#else
-    strcpy(command, main_dir.c_str());
-#endif
-    strcat(command, temp);
-
-#ifdef _WIN32
-    std::cout << command << std::endl;
-#else
-    std::cout << "mkdir " << command << std::endl;
-#endif
-
-#ifdef _WIN32
-    system(command);
-#else
-    mkdir(command, 0755);
-#endif
-
-    va_end(var);
 }
 
 void save_file_1D(float *a, const int num, const std::string main_dir, const char *name, ...)

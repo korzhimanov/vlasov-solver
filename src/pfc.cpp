@@ -13,6 +13,7 @@
  */
 
 #include "pfc.h"
+#include <fstream>
 
 PFC::PFC() : onesixth(1./6.)
 {
@@ -94,14 +95,14 @@ void PFC::AllocMemory()
     f2 = new double[mesh->MAX_Z*MAX_P];
 }
 
-void PFC::SaveInput(FILE *input)
+void PFC::SaveInput(std::ofstream& fs)
 {
-    fprintf(input, "\t\tCharge = %f electron charge\n", CHARGE);
-    fprintf(input, "\t\tMass = %f electron mass\n", MASS);
-    fprintf(input, "\t\tInitial temperature = %f of the rest energy = %f keV\n", T_init, T_init*511*MASS);
-    fprintf(input, "\t\tMomentum cell size = %f Mc = %f keV/c\n", dp, dp*MASS*511);
-    fprintf(input, "\t\tTotal momentum cells = %d\n", MAX_P);
-    fprintf(input, "\t\tMaximal momentum = %f Mc = %f keV/c\n", 0.5*MAX_P*dp, 0.5*MAX_P*dp*MASS*511);
+    fs << "\t\tCharge = " << CHARGE << " electron charge\n";
+    fs << "\t\tMass = " << MASS << " electron mass\n";
+    fs << "\t\tInitial temperature = " << T_init << " of the rest energy = " << T_init*511*MASS << " keV\n";
+    fs << "\t\tMomentum cell size = " << dp << " Mc = " << dp*MASS*511 << " keV/c\n";
+    fs << "\t\tTotal momentum cells = " << MAX_P << "\n";
+    fs << "\t\tMaximal momentum = " << 0.5*MAX_P*dp << " Mc = " << 0.5*MAX_P*dp*MASS*511 << " keV/c\n";
 }
 
 void PFC::SetDistribution()

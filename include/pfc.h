@@ -89,7 +89,7 @@ private:
 //------informative functions------------------------------------------
 public:
     // saves input information
-    void SaveInput(FILE *input);
+    void SaveInput(std::ofstream&);
     // saves output information
     void SaveConcentrationTxt(std::string filename);
     void SaveConcentrationBin(std::string filename);

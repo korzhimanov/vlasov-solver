@@ -105,67 +105,84 @@ void Output::CreateDirs()
 {
     // creating main directory for output
     {
-        filesaving::create_dir("", (output_directory_name).c_str());
+        filesaving::create_dir(output_directory_name);
     }
 
     // creating directory for test particles
     if (solver->particles->particles_number > 0)
     {
-        filesaving::create_dir(output_directory_name, "particles/");
+        filesaving::create_dir(output_directory_name + "particles/");
     }
 
     // creating directories for storing distribution functions in files
     if (save_dstr == true)
         for (int sp = 0; sp < solver->plasmas->species_number; sp++)
         {
-            filesaving::create_dir(output_directory_name, "dstr_func%d/", sp);
+            std::ostringstream ss;
+            ss << output_directory_name << "dstr_func" << sp << "/";
+            filesaving::create_dir(ss.str());
         }
 }
 
 void Output::SaveInput(std::string fn)
 {
     // storing information about input parameters
-    FILE *input;
-    input = fopen((output_directory_name + fn).c_str(), "w+");
-    fprintf(input, "\nRelativistic Vlasov-Maxwell solver. Developed by Artem Korzhimanov. mailto: korzhimanov.artem@gmail.com\n");
+    std::ofstream fs((output_directory_name + fn).c_str(), std::ios_base::app);
+    fs << "Relativistic Vlasov-Maxwell solver. Developed by Artem Korzhimanov. mailto: korzhimanov.artem@gmail.com\n\n";
 
-    fprintf(input, "\nGENERAL PARAMETERS\n\n");
-    fprintf(input, "\tSpace cells per wavelength = %d\n", solver->mesh->ppw);
-    fprintf(input, "\tSpace step = %f Wavelengths\n", .5*M_1_PI*solver->mesh->dz);
-    fprintf(input, "\tTotal space cells = %d\n", solver->mesh->MAX_Z);
-    fprintf(input, "\tTotal space size = %f Wavelengths\n", (double)solver->mesh->MAX_Z/solver->mesh->ppw);
-    fprintf(input, "\tTime step = %f Waveperiods\n", .5*M_1_PI*solver->mesh->dt);
-    fprintf(input, "\tTotal time steps = %d\n", solver->mesh->MAX_T);
-    fprintf(input, "\tTotal running time = %f Waveperiods\n", .5*M_1_PI*solver->mesh->MAX_T*solver->mesh->dt);
+    fs << "GENERAL PARAMETERS\n\n";
+    fs << "\tSpace cells per wavelength = " << solver->mesh->ppw << "\n";
+    fs << "\tSpace step = " << .5*M_1_PI*solver->mesh->dz <<" Wavelengths\n";
+    fs << "\tTotal space cells = " << solver->mesh->MAX_Z << "\n";
+    fs << "\tTotal space size = " << (double)solver->mesh->MAX_Z/solver->mesh->ppw << " Wavelengths\n";
+    fs << "\tTime step = " << .5*M_1_PI*solver->mesh->dt << " Waveperiods\n";
+    fs << "\tTotal time steps = " << solver->mesh->MAX_T << "\n";
+    fs << "\tTotal running time = " << .5*M_1_PI*solver->mesh->MAX_T*solver->mesh->dt << " Waveperiods\n";
 
-    fprintf(input, "\nPLASMA PARAMETERS\n\n");
+    fs << "\nPLASMA PARAMETERS\n\n";
     for (int sp = 0; sp < solver->plasmas->species_number; sp++)
     {
-        fprintf(input, "\n\tSpecies %d\n\n", sp);
-        solver->plasmas->pfc[sp].SaveInput(input);
+        fs << "\n\tSpecies " << sp << "\n\n";
+        solver->plasmas->pfc[sp].SaveInput(fs);
     }
 
-    fprintf(input, "\nTEST PARTICLES PARAMETERS\n\n");
-    fprintf(input, "\tNumber of particles = %d\n", solver->particles->particles_number);
+    fs << "\nTEST PARTICLES PARAMETERS\n\n";
+    fs << "\tNumber of particles = " << solver->particles->particles_number << "\n";
     if (solver->particles->particles_number > 0)
     {
-        fprintf(input, "\tMass of particles = %f\n", solver->particles->mass);
-        fprintf(input, "\tCharge of particles = %f\n", solver->particles->charge);
-        fprintf(input, "\tParticles are equidistantly deposited from %f to %f Wavelenths\n", (float)solver->particles->start_point/solver->mesh->ppw, (float)(solver->particles->start_point + solver->particles->interval*solver->particles->particles_number)/solver->mesh->ppw);
+        fs << "\tMass of particles = " << solver->particles->mass << "\n";
+        fs << "\tCharge of particles = " << solver->particles->charge << "\n";
+        fs << "\tParticles are equidistantly deposited from " << (float)solver->particles->start_point/solver->mesh->ppw;
+        fs << " to " << (float)(solver->particles->start_point + solver->particles->interval*solver->particles->particles_number)/solver->mesh->ppw << " Wavelengths\n";
     }
 
-    fprintf(input, "\nOUTPUT PARAMETERS\n\n");
+    fs << "\nOUTPUT PARAMETERS\n\n";
+    fs << "\tFields are ";
     if (save_fields == true)
-        fprintf(input, "\tFields are being saved every %d steps or every %f Waveperiods in files in %s-format\n", save_fields_dt, (double)save_fields_dt/solver->mesh->ppw, save_fields_format.c_str());
-    else fprintf(input, "\tFields are not being saved\n");
+    {
+        fs << "being saved every " << save_fields_dt << " steps";
+        fs << " or every " << (double)save_fields_dt/solver->mesh->ppw << " Waveperiods in files";
+        fs << " in " << save_fields_format << "-format\n";
+    }
+    else fs << "not being saved\n";
+    fs << "\tConcentration distributions are ";
     if (save_concs == true)
-        fprintf(input, "\tConcentration distributions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", save_concs_dt, (double)save_concs_dt/solver->mesh->ppw, save_concs_format.c_str());
-    else fprintf(input, "\tConcentration distributions are not being saved\n");
+    {
+        fs << "being saved every " << save_concs_dt << " steps";
+        fs << " or every " << (double)save_concs_dt/solver->mesh->ppw << " Waveperiods in files";
+        fs << " in " << save_concs_format << "-format\n";
+    }
+    else fs << "not being saved\n";
+    fs << "\tDistribution functions are ";
     if (save_dstr == true)
-        fprintf(input, "\tDistribution functions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", save_dstr_dt, (double)save_dstr_dt/solver->mesh->ppw, save_dstr_format.c_str());
-    else fprintf(input, "\tDistribution functions are not being saved\n");
+    {
+        fs << "being saved every " << save_dstr_dt << " steps";
+        fs << " or every " << (double)save_dstr_dt/solver->mesh->ppw << " Waveperiods in files";
+        fs << " in " << save_dstr_format << "-format";
+    }
+    else fs << "not being saved";
 
-    fclose(input);
+    fs << std::endl;
 }
 
 void Output::SaveFields(int k)
