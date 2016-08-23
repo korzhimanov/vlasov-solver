@@ -29,10 +29,6 @@ class InitParams
         // general
         Mesh *mesh;
         double THETA;
-        // pulse
-        pFunc *pulse_x,
-              *pulse_y;
-        int source; // position of a source of an electromagnetic wave in respect to a PML-layer
         // particles
         int NUM_PRT,
             start_point;

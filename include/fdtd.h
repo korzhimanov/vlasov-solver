@@ -32,27 +32,38 @@ class FDTD
         Mesh *mesh;
         int PML; // number of PML-steps
         double MAX_SIGMA; // maximal absorption coefficient in PML
-        int SOURCE; // the position of a source
-        double dtdz; // dt/dz
         double *r, *r1; // absorption coefficients in PML
+        int SOURCE; // the position of a source relative to PML layer
+        pFunc *pulse_x,
+              *pulse_y;
 
     public:
 //------constructors---------------------------------------------------
         FDTD();
-        FDTD(Mesh *grid);
+        FDTD(pyinput*, Mesh*, int*);
 //------destructor-----------------------------------------------------
         virtual ~FDTD();
 
 //------initialization-------------------------------------------------
         // initializes all but PML parameters, allocates memory for fields and puts all of them equal to zero
-        void Init(Mesh *grid, int source = 1);
-        // initializes PML parameters, allocates memory for absorption coefficients and initializes them
-        // !!! must be caled after Init() !!!
-        void InitPML(int pml, double max_sigma);
+        int Init(pyinput*);
+        // allocates memory for fields and puts all of them equal to zero
+        void AllocMemory();
 
 //------solver---------------------------------------------------------
         // solves Maxwell equations
         void Maxwell();
+
+        /**
+         * \todo Change .5*mesh->dz and .5*mesh->dt to constants
+         */
+        inline void CalcSources(double t)
+        {
+            exl =   pulse_x->call((double)(t - .5*mesh->dz));
+            eyl =   pulse_y->call((double)(t - .5*mesh->dz));
+            hxl = - pulse_y->call((double)(t + .5*mesh->dt));
+            hyl =   pulse_x->call((double)(t + .5*mesh->dt));
+        }
 
 //------informative functions------------------------------------------
         // calculates flux in x-direction at 'cell'

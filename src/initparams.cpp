@@ -27,8 +27,6 @@ InitParams::InitParams(pyinput* i, std::string dn, Mesh* m, int* err) : mesh(m),
 
 InitParams::~InitParams()
 {
-    delete pulse_x;
-    delete pulse_y;
 }
 
 int InitParams::Init(std::string dn)
@@ -41,11 +39,6 @@ int InitParams::Init(std::string dn)
     THETA = in->GetDouble("THETA");
     if (THETA < 0. && THETA >= 0.5*M_PI)
         std::cout << "Invalid incident angle! It should be between 0 and pi/2." << std::endl;
-
-
-    pulse_x = new pFunc(in->GetFunc("PULSE_X"));
-    pulse_y = new pFunc(in->GetFunc("PULSE_Y"));
-    tpi = 1; if ( !in->SetPositive("source", &tpi) ) return 1400; source = tpi;
 
     tpi = 0; if ( !in->SetNotNegative("NUM_PRT", &tpi) ) return  1600; NUM_PRT = tpi;
     if (NUM_PRT > 0)

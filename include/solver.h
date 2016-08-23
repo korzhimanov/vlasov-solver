@@ -61,20 +61,12 @@ class Solver
 //------initialisation-------------------------------------------------
         int InitVars(std::string, std::string);
         void AllocMemory();
-        void InitFields();
         void InitTestParticles();
         void CreateDirs();
         void SaveInput(std::string file);
 
 //------calculations---------------------------------------------------
         void MoveParticles();
-        inline void CalcSources(double t)
-        {
-            fdtd->exl =   params->pulse_x->call((double)(t - .5*params->mesh->dz));
-            fdtd->eyl =   params->pulse_y->call((double)(t - .5*params->mesh->dz));
-            fdtd->hxl = - params->pulse_y->call((double)(t + .5*params->mesh->dt));
-            fdtd->hyl =   params->pulse_x->call((double)(t + .5*params->mesh->dt));
-        }
 
         inline void CalcTransFields()
         {
@@ -101,6 +93,7 @@ class Solver
             for (int sp = 0; sp < plasmas->species_number; sp++)
                 plasmas->pfc[sp].CalcCurrent(fdtd, plasmas->ax, plasmas->ay, plasmas->a2);
 
+            // field generation by fixed ions (only in a boosted frame)
             fdtd->ey[0] -= 0.5*sin(params->THETA)*plasmas->critical_concentration*params->mesh->dz*plasmas->fixed_ions_conc[0];
             for (int i = 1; i < params->mesh->MAX_Z; i++)
                 fdtd->ey[i] -= 0.5*sin(params->THETA)*plasmas->critical_concentration*params->mesh->dz*(plasmas->fixed_ions_conc[i]+plasmas->fixed_ions_conc[i-1]);
@@ -122,6 +115,7 @@ class Solver
 Solver::Solver(InitParams* p, pyinput* in, Mesh* m, int* err) : params(p)
 {
     plasmas = new Plasmas(in, m, err);
+    fdtd = new FDTD(in, m, err);
     AllocMemory();
 }
 
@@ -146,9 +140,6 @@ int Solver::InitVars(std::string file_name, std::string directory_name)
 
 void Solver::AllocMemory()
 {
-    // memory allocation for electromagnetic fields
-    fdtd = new FDTD;
-
     // memory allocation for test particles
     if (params->NUM_PRT > 0) prt = new Particle[params->NUM_PRT];
 
@@ -157,20 +148,13 @@ void Solver::AllocMemory()
 
 void Solver::InitOutput(std::string fn)
 {
+    em_flux = 0.;
     params->output = fopen((params->output_directory_name + fn).c_str(), "w+");
     fprintf(params->output, " Step |   Neutrality   |");
     for (int sp = 0; sp < plasmas->species_number; sp++)
         fprintf(params->output, "       W_%d       |", sp);
     fprintf(params->output, "     W_el-st    |     W_laser    |     EM Flux    |     W_total    |\n");
     fflush(params->output);
-}
-
-void Solver::InitFields()
-{
-    fdtd->Init(params->mesh, params->source);
-    fdtd->InitPML(int(1./params->mesh->dz), 10.);
-
-    em_flux = 0.;
 }
 
 void Solver::InitTestParticles()

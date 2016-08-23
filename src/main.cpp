@@ -103,7 +103,6 @@ int main(int argc, char **argv)
 
     Solver S(&init_params, &in, &mesh, &err);
 
-    S.InitFields();
     S.plasmas->InitDistribution();
     S.InitTestParticles();
 
@@ -117,7 +116,7 @@ int main(int argc, char **argv)
 
     double t1, t2, t;
     std::cout << std::fixed << std::setprecision(4);
-    for (int k = 0; k < init_params.mesh->MAX_T; k++)
+    for (int k = 0; k < mesh.MAX_T; k++)
     {
         // LongField
         t = t1 = get_time();
@@ -127,7 +126,7 @@ int main(int argc, char **argv)
 
         // TransField
         t1 = t2;
-        S.CalcSources( (double)k*init_params.mesh->dt );
+        S.fdtd->CalcSources( (double)k*mesh.dt );
         S.CalcTransFields();
         t2 = get_time();
         std::cout << std::setw(11) << (t2-t1);
@@ -175,7 +174,7 @@ int main(int argc, char **argv)
         std::cout << std::setw(10) << (t2-t1);
         std::cout << std::setw(10) << (t2-t );
         std::cout << std::setprecision(2);
-        std::cout << std::setw(9) << (t2-t0) << "/ " << (t2-t0)/(k+1)*(init_params.mesh->MAX_T) << std::endl;
+        std::cout << std::setw(9) << (t2-t0) << "/ " << (t2-t0)/(k+1)*(mesh.MAX_T) << std::endl;
         std::cout << std::setprecision(4);
     }
 
@@ -183,7 +182,7 @@ int main(int argc, char **argv)
 
     std::cout << "Done!" << std::endl;
     t = get_time();
-    std::cout << "Full time: " << (t-t0) << " s (" << (t-t0)/init_params.mesh->MAX_T << " s per iteration)" << std::endl;
+    std::cout << "Full time: " << (t-t0) << " s (" << (t-t0)/mesh.MAX_T << " s per iteration)" << std::endl;
 
     return 0;
 }

@@ -21,6 +21,8 @@ MAX_T = 10*ppw+1 # number of the steps for time
 dt = 2*PI/ppw # step size for time
 dz = 2*PI/ppw # step size for coordinate
 THETA = 0 #PI/4 # incident angle for laser pulse
+PML = 512 # number of cells devoted to PML
+PML_MAX_SIGMA = 100. # miximal absorption coefficient in the PML
 
 ## PLASMA PARAMETERS
 

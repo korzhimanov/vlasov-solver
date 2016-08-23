@@ -12,22 +12,23 @@
  * \copyright The MIT License (MIT)
  */
 
+#include "fdtd.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 #include <iostream>
-#include "fdtd.h"
+#include "mymath.h"
 
 FDTD::FDTD()
 {
     exl = eyl = exr = eyr = hxl = hyl = hxr = hyr = 0.;
 }
 
-FDTD::FDTD(Mesh *grid)
+FDTD::FDTD(pyinput* in, Mesh* m, int* err) : mesh(m), PML(512), MAX_SIGMA(100.), SOURCE(1)
 {
     exl = eyl = exr = eyr = hxl = hyl = hxr = hyr = 0.;
-    Init(grid);
-    InitPML(512, 100.);
+    *err = Init(in);
+    AllocMemory();
 }
 
 FDTD::~FDTD()
@@ -36,28 +37,33 @@ FDTD::~FDTD()
     delete[] ey;
     delete[] hx;
     delete[] hy;
+    delete pulse_x;
+    delete pulse_y;
     delete[] r;
     delete[] r1;
 }
 
-void FDTD::Init(Mesh *grid, int source)
+int FDTD::Init(pyinput* in)
 {
-    mesh = grid;
-    dtdz = mesh->dt/mesh->dz;
+    pulse_x = new pFunc(in->GetFunc("PULSE_X"));
+    pulse_y = new pFunc(in->GetFunc("PULSE_Y"));
+    if ( !in->SetPositive("source", &SOURCE) ) return 300;
+
+    if ( !in->SetPositive("PML", &PML) ) return 310;
+    if ( !in->SetPositive("PML_MAX_SIGMA", &MAX_SIGMA) ) return 320;
+}
+
+void FDTD::AllocMemory()
+{
     ex = new double[mesh->MAX_Z + 1];
     ey = new double[mesh->MAX_Z + 1];
     hx = new double[mesh->MAX_Z];
     hy = new double[mesh->MAX_Z];
-    for (int i = 0; i < mesh->MAX_Z; i++)
-        ex[i] = ey[i] = hx[i] = hy[i] = 0.;
-    ex[mesh->MAX_Z] = ey[mesh->MAX_Z] = 0.;
-    SOURCE = source;
-}
+    mymath::zeros(ex, mesh->MAX_Z + 1);
+    mymath::zeros(ey, mesh->MAX_Z + 1);
+    mymath::zeros(hx, mesh->MAX_Z);
+    mymath::zeros(hy, mesh->MAX_Z);
 
-void FDTD::InitPML(int pml, double max_sigma)
-{
-    PML = pml;
-    MAX_SIGMA = max_sigma;
     r  = new double[2*PML];
     r1 = new double[2*PML];
     CalcPMLCoeff();
@@ -71,8 +77,8 @@ void FDTD::Maxwell()
     // advance magnetic fields
     for (j = PML; j <= mesh->MAX_Z - PML; j++)
     {
-        hx[j] += dtdz * (ey[j+1] - ey[j]);
-        hy[j] -= dtdz * (ex[j+1] - ex[j]);
+        hx[j] += mesh->dt_dz * (ey[j+1] - ey[j]);
+        hy[j] -= mesh->dt_dz * (ex[j+1] - ex[j]);
     }
 
     // PML with exponential time-stepping
@@ -89,16 +95,16 @@ void FDTD::Maxwell()
     }
 
     // incident wave correction
-    hx[PML+SOURCE-1]      -= dtdz * eyl;
-    hy[PML+SOURCE-1]      += dtdz * exl;
-    hx[mesh->MAX_Z-PML-1] += dtdz * eyr;
-    hy[mesh->MAX_Z-PML-1] -= dtdz * exr;
+    hx[PML+SOURCE-1]      -= mesh->dt_dz * eyl;
+    hy[PML+SOURCE-1]      += mesh->dt_dz * exl;
+    hx[mesh->MAX_Z-PML-1] += mesh->dt_dz * eyr;
+    hy[mesh->MAX_Z-PML-1] -= mesh->dt_dz * exr;
 
     // advance electric fields
     for (j = PML + 1; j <= mesh->MAX_Z - PML; j++)
     {
-        ex[j] -= dtdz * (hy[j] - hy[j-1]);
-        ey[j] += dtdz * (hx[j] - hx[j-1]);
+        ex[j] -= mesh->dt_dz * (hy[j] - hy[j-1]);
+        ey[j] += mesh->dt_dz * (hx[j] - hx[j-1]);
     }
 
     // PML with exponential time-stepping
@@ -115,10 +121,10 @@ void FDTD::Maxwell()
     }
 
     // incident wave correction
-    ex[PML+SOURCE]    += dtdz * hyl;
-    ey[PML+SOURCE]    -= dtdz * hxl;
-    ex[mesh->MAX_Z-PML] += dtdz * hyr;
-    ey[mesh->MAX_Z-PML] -= dtdz * hxr;
+    ex[PML+SOURCE]    += mesh->dt_dz * hyl;
+    ey[PML+SOURCE]    -= mesh->dt_dz * hxl;
+    ex[mesh->MAX_Z-PML] += mesh->dt_dz * hyr;
+    ey[mesh->MAX_Z-PML] -= mesh->dt_dz * hxr;
 }
 
 void FDTD::CalcPMLCoeff()
@@ -126,7 +132,7 @@ void FDTD::CalcPMLCoeff()
     double sigma;
     for (int j = 0; j < 2*PML; j++)
     {
-        sigma = MAX_SIGMA * pow(double(j+1) / double(2*PML), 2.);
+        sigma = MAX_SIGMA * mymath::sqr(double(j+1) / double(2*PML));
         r[j] = exp( - sigma * mesh->dt);
         r1[j] = (r[j] - 1.) / (sigma * mesh->dz);
     }
