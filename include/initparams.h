@@ -27,7 +27,6 @@ class InitParams
 {
     public:
         // general
-        int ppw;
         Mesh *mesh;
         double THETA;
         // plasma
@@ -60,15 +59,11 @@ class InitParams
         pyinput *in; // move to private later
 
     public:
-        InitParams();
-        InitParams(std::string, std::string);
+        InitParams(pyinput*, std::string, Mesh*, int*);
         virtual ~InitParams();
 
     private:
-        int Init(std::string, std::string);
-        bool SetNotNegative(std::string name, int *var);
-        bool SetPositive(std::string name, int *var);
-        bool SetPositive(std::string name, double *var);
+        int Init(std::string);
         bool SetFormat(std::string name, std::string *var);
 };
 

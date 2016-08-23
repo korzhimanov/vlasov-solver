@@ -22,22 +22,25 @@ $(OBJ_DIR)/pfunc.o: $(INCLUDE_DIR)/pfunc.h $(SRC_DIR)/pfunc.cpp
 $(OBJ_DIR)/pyinput.o: $(OBJ_DIR)/pfunc.o $(INCLUDE_DIR)/pyinput.h $(SRC_DIR)/pyinput.cpp
 	$(CXX) $(CFLAGS) $(LFLAGS) -c $(SRC_DIR)/pyinput.cpp -o $(OBJ_DIR)/pyinput.o
 
-$(OBJ_DIR)/initparams.o: $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/pfunc.o $(INCLUDE_DIR)/mesh.h $(INCLUDE_DIR)/initparams.h $(SRC_DIR)/initparams.cpp
+$(OBJ_DIR)/mesh.o: $(OBJ_DIR)/pyinput.o $(INCLUDE_DIR)/mesh.h $(SRC_DIR)/mesh.cpp
+	$(CXX) $(CFLAGS) $(LFLAGS) -c $(SRC_DIR)/mesh.cpp -o $(OBJ_DIR)/mesh.o
+
+$(OBJ_DIR)/initparams.o: $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/mesh.o $(INCLUDE_DIR)/initparams.h $(SRC_DIR)/initparams.cpp
 	$(CXX) $(CFLAGS) $(LFLAGS) -c $(SRC_DIR)/initparams.cpp -o $(OBJ_DIR)/initparams.o
 
-$(OBJ_DIR)/fdtd.o: $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(INCLUDE_DIR)/mesh.h $(INCLUDE_DIR)/fdtd.h $(SRC_DIR)/fdtd.cpp
+$(OBJ_DIR)/fdtd.o: $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/mesh.o $(INCLUDE_DIR)/fdtd.h $(SRC_DIR)/fdtd.cpp
 	$(CXX) $(CFLAGS) $(LFLAGS) -c $(SRC_DIR)/fdtd.cpp -o $(OBJ_DIR)/fdtd.o
 
-$(OBJ_DIR)/pfc.o: $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/fdtd.o $(INCLUDE_DIR)/mesh.h $(INCLUDE_DIR)/pfc.h $(SRC_DIR)/pfc.cpp
+$(OBJ_DIR)/pfc.o: $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/mesh.o $(INCLUDE_DIR)/pfc.h $(SRC_DIR)/pfc.cpp
 	$(CXX) $(CFLAGS) $(LFLAGS) -c $(SRC_DIR)/pfc.cpp -o $(OBJ_DIR)/pfc.o
 
 $(OBJ_DIR)/particle.o: $(INCLUDE_DIR)/particle.h $(SRC_DIR)/particle.cpp
 	$(CXX) $(CFLAGS) $(LFLAGS) -c $(SRC_DIR)/particle.cpp -o $(OBJ_DIR)/particle.o
 
-$(BIN_DIR)/$(OUT): $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/particle.o $(INCLUDE_DIR)/mesh.h $(INCLUDE_DIR)/solver.h $(SRC_DIR)/main.cpp
-	$(CXX) $(SRC_DIR)/main.cpp -o $(BIN_DIR)/$(OUT) $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/particle.o $(CFLAGS) $(LFLAGS) $(LIBS)
+$(BIN_DIR)/$(OUT): $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/particle.o $(OBJ_DIR)/mesh.o $(INCLUDE_DIR)/solver.h $(SRC_DIR)/main.cpp
+	$(CXX) $(SRC_DIR)/main.cpp -o $(BIN_DIR)/$(OUT) $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/mesh.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/particle.o $(CFLAGS) $(LFLAGS) $(LIBS)
 
-all: $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/particle.o $(BIN_DIR)/$(OUT)
+all: $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/mesh.o $(OBJ_DIR)/mesh.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/particle.o $(BIN_DIR)/$(OUT)
 
 clean:
 	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/$(OUT)

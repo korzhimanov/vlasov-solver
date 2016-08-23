@@ -39,11 +39,11 @@
 class PFC
 {
 public:
-    double
-        N_0, // critical concentration in the boosted frame (useful for simulation of oblique irradiation)
-        P0; // initial mean momentum along y-axis (useful for simulation of oblique irradiation in boosted frame)
+    double N_0, // critical concentration in the boosted frame (useful for simulation of oblique irradiation)
+           P0; // initial mean momentum along y-axis (useful for simulation of oblique irradiation in boosted frame)
 private:
-    double *f1, *f2;
+    double *f1,
+           *f2;
     Mesh *mesh;
     int MAX_P, // number of steps in momentum space
         type; // type of the particle
@@ -55,7 +55,7 @@ private:
         dp; // mesh step in momentum space
     double maxf; // maximal value of the distribution function
     double vdt_dz; // projections of velocity in phase space
-    double onesixth;
+    const double onesixth;
     double res, tmp, fold;
     int new_cell;
     double flux_part;

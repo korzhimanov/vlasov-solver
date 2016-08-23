@@ -58,3 +58,24 @@ pFunc pyinput::GetFunc(std::string name)
     pFunc func(PyDict_GetItemString(main_dict, name.c_str()));
     return func;
 }
+
+bool pyinput::SetNotNegative(std::string name, int *var)
+{
+    *var = GetInt(name);
+    if ( *var >= 0 ) return true;
+    else {std::cout << name + " mustnot be negative" << std::endl; return false;}
+}
+
+bool pyinput::SetPositive(std::string name, int *var)
+{
+    *var = GetInt(name);
+    if ( *var > 0 ) return true;
+    else {std::cout << name + " must be positive" << std::endl; return false;}
+}
+
+bool pyinput::SetPositive(std::string name, double *var)
+{
+    *var = GetDouble(name);
+    if ( *var > 0. ) return true;
+    else {std::cout << name + " must be positive" << std::endl; return false;}
+}

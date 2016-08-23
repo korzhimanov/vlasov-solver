@@ -274,10 +274,10 @@ void Solver::SaveInput(std::string file)
     fprintf(input, "\nVlasov-Maxwell code. Developed by Artem Korzhimanov and Arkady Gonoskov. mailto: kav@ufp.appl.sci-nnov.ru\n");
 
     fprintf(input, "\nGENERAL PARAMETERS\n\n");
-    fprintf(input, "\tSpace cells per wavelength = %d\n", params->ppw);
+    fprintf(input, "\tSpace cells per wavelength = %d\n", params->mesh->ppw);
     fprintf(input, "\tSpace step = %f Wavelengths\n", .5*M_1_PI*params->mesh->dz);
     fprintf(input, "\tTotal space cells = %d\n", params->mesh->MAX_Z);
-    fprintf(input, "\tTotal space size = %f Wavelengths\n", (double)params->mesh->MAX_Z/params->ppw);
+    fprintf(input, "\tTotal space size = %f Wavelengths\n", (double)params->mesh->MAX_Z/params->mesh->ppw);
     fprintf(input, "\tTime step = %f Waveperiods\n", .5*M_1_PI*params->mesh->dt);
     fprintf(input, "\tTotal time steps = %d\n", params->mesh->MAX_T);
     fprintf(input, "\tTotal running time = %f Waveperiods\n", .5*M_1_PI*params->mesh->MAX_T*params->mesh->dt);
@@ -295,18 +295,18 @@ void Solver::SaveInput(std::string file)
     {
         fprintf(input, "\tMass of particles = %f\n", params->MASS_PRT);
         fprintf(input, "\tCharge of particles = %f\n", params->CHARGE_PRT);
-        fprintf(input, "\tParticles are equidistantly deposited from %f to %f Wavelenths\n", (float)params->start_point/params->ppw, (float)(params->start_point + params->interval*params->NUM_PRT)/params->ppw);
+        fprintf(input, "\tParticles are equidistantly deposited from %f to %f Wavelenths\n", (float)params->start_point/params->mesh->ppw, (float)(params->start_point + params->interval*params->NUM_PRT)/params->mesh->ppw);
     }
 
     fprintf(input, "\nOUTPUT PARAMETERS\n\n");
     if (params->save_fields == true)
-        fprintf(input, "\tFields are being saved every %d steps or every %f Waveperiods in files in %s-format\n", params->save_fields_dt, (double)params->save_fields_dt/params->ppw, params->save_fields_format.c_str());
+        fprintf(input, "\tFields are being saved every %d steps or every %f Waveperiods in files in %s-format\n", params->save_fields_dt, (double)params->save_fields_dt/params->mesh->ppw, params->save_fields_format.c_str());
     else fprintf(input, "\tFields are not being saved\n");
     if (params->save_concs == true)
-        fprintf(input, "\tConcentration distributions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", params->save_concs_dt, (double)params->save_concs_dt/params->ppw, params->save_concs_format.c_str());
+        fprintf(input, "\tConcentration distributions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", params->save_concs_dt, (double)params->save_concs_dt/params->mesh->ppw, params->save_concs_format.c_str());
     else fprintf(input, "\tConcentration distributions are not being saved\n");
     if (params->save_dstr == true)
-        fprintf(input, "\tDistribution functions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", params->save_dstr_dt, (double)params->save_dstr_dt/params->ppw, params->save_dstr_format.c_str());
+        fprintf(input, "\tDistribution functions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", params->save_dstr_dt, (double)params->save_dstr_dt/params->mesh->ppw, params->save_dstr_format.c_str());
     else fprintf(input, "\tDistribution functions are not being saved\n");
 
     filesaving::close_file(input);
@@ -466,7 +466,7 @@ void Solver::SavePrtDat(int k)
 
 void Solver::SaveOutput(int k, std::string file)
 {
-    if (k%params->ppw == 0)
+    if (k%params->mesh->ppw == 0)
     {
         for (int sp = 0; sp < params->NUM_SP; sp++)
             plasma_energy[sp] = pfc[sp].KineticEnergy(ax, ay);

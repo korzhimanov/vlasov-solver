@@ -18,12 +18,13 @@
 #include <omp.h>
 #endif
 
-#include "solver.h"
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <ctime>
+#include "pyinput.h"
+#include "solver.h"
 
 double invcps = 1./(double)CLOCKS_PER_SEC;
 double get_time()
@@ -87,7 +88,19 @@ int main(int argc, char **argv)
         while (i < argc);
     }
 
-    InitParams init_params(input_file_name, output_folder_name);
+    int err = 0;
+
+    pyinput in;
+    std::cout << "Reading input file " << input_file_name << " ... " << std::endl;
+    in.ReadFile(input_file_name);
+    std::cout << "done!" << std::endl;
+
+    Mesh mesh(&in, &err);
+    if (err != 0) {std::cout << "Initialization failed! Returning code is " << err << std::endl; return err;}
+
+    InitParams init_params(&in, output_folder_name, &mesh, &err);
+    if (err != 0) {std::cout << "Initialization failed! Returning code is " << err << std::endl; return err;}
+
     Solver S(&init_params);
 
     S.InitFields();

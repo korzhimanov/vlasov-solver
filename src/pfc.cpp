@@ -14,14 +14,13 @@
 
 #include "pfc.h"
 
-PFC::PFC()
+PFC::PFC() : onesixth(1./6.)
 {
-    onesixth = 1./6.;
 }
 
-PFC::PFC(int particle_type, pyinput *in, Mesh *grid)
+PFC::PFC(int particle_type, pyinput *in, Mesh *m) : onesixth(1./6.)
 {
-    Init(particle_type, in, grid);
+    Init(particle_type, in, m);
 }
 
 PFC::~PFC()
@@ -51,11 +50,11 @@ void PFC::SetPositive(pyinput *in, std::string name, double *var)
     if ( *var <= 0. ) std::cout << name + " must be positive" << std::endl;
 }
 
-void PFC::Init(int particle_type, pyinput *in, Mesh *grid)
+void PFC::Init(int particle_type, pyinput *in, Mesh *m)
 {
     type = particle_type;
 
-    mesh = grid;
+    mesh = m;
 
     char *tmp = new char[32];
     sprintf(tmp, "PROFILE_%d", type); profile = new pFunc(in->GetFunc(tmp));

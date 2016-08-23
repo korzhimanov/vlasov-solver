@@ -7,7 +7,7 @@
 
 /**
  * \file mesh.h
- * \brief The header file which defines Mesh struct
+ * \brief The header file which defines Mesh class
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
  */
@@ -15,14 +15,25 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include "pyinput.h"
+
 /**
- * /struct Mesh
- * The structure for mesh parameters
+ * /class Mesh
+ * The class to store and initialeze mesh parameters
 */
-struct Mesh
+class Mesh
 {
-    double dz, dt, dt_dz;
-    int MAX_Z, MAX_T;
+public:
+    double dz,
+           dt,
+           dt_dz;
+    int ppw,
+        MAX_Z,
+        MAX_T;
+public:
+    Mesh();
+    Mesh(pyinput*, int *);
+    int Init(pyinput*);
 };
 
 #endif // MESH_H
