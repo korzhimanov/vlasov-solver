@@ -29,9 +29,6 @@ class InitParams
         // general
         Mesh *mesh;
         double THETA;
-        // plasma
-        int NUM_SP;
-        pFunc *fixed_ions_profile;
         // pulse
         pFunc *pulse_x,
               *pulse_y;

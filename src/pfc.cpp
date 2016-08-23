@@ -16,11 +16,12 @@
 
 PFC::PFC() : onesixth(1./6.)
 {
+
 }
 
-PFC::PFC(int particle_type, pyinput *in, Mesh *m) : onesixth(1./6.)
+PFC::PFC(int particle_type, pyinput *in, Mesh *m, double *n0, double *p0) : onesixth(1./6.)
 {
-    Init(particle_type, in, m);
+    Init(particle_type, in, m, n0, p0);
 }
 
 PFC::~PFC()
@@ -50,11 +51,14 @@ void PFC::SetPositive(pyinput *in, std::string name, double *var)
     if ( *var <= 0. ) std::cout << name + " must be positive" << std::endl;
 }
 
-void PFC::Init(int particle_type, pyinput *in, Mesh *m)
+void PFC::Init(int particle_type, pyinput *in, Mesh *m, double *n0, double *p0)
 {
     type = particle_type;
 
     mesh = m;
+
+    N0 = *n0;
+    P0 = *p0;
 
     char *tmp = new char[32];
     sprintf(tmp, "PROFILE_%d", type); profile = new pFunc(in->GetFunc(tmp));
@@ -72,14 +76,6 @@ void PFC::Init(int particle_type, pyinput *in, Mesh *m)
     T_init =   0.02; sprintf(tmp,      "T_init_%d", type); SetPositive(in, tmp, &T_init);
     if (T_init < 0.5*dp2/MASS)
         std::cout << "WARNING! Temperature of " << type << " particle type cannot be resolved by momentum grid step." << std::endl;
-    double THETA = in->GetDouble("THETA");
-    if (THETA >= 0. && THETA < M_PI/2)
-    {
-        P0 = tan(THETA);
-        N_0 = 1./(cos(THETA)*cos(THETA)*cos(THETA));
-    }
-    else
-        std::cout << "ERROR! Invalid incident angle! It should be between 0 and pi/2." << std::endl;
     delete[] tmp;
 
     p  = new double[MAX_P];
@@ -111,13 +107,13 @@ void PFC::SaveInput(FILE *input)
 void PFC::SetDistribution()
 {
     // some constants
-    quart_q2n0dtdp_m = .25 * CHARGE * CHARGE * N_0 * mesh->dt * dp / MASS;
-    half_qn0dz       = .5  * CHARGE * N_0 * mesh->dz * dp;
+    quart_q2n0dtdp_m = .25 * CHARGE * CHARGE * N0 * mesh->dt * dp / MASS;
+    half_qn0dz       = .5  * CHARGE * N0 * mesh->dz * dp;
     halfq_m          = .5  * CHARGE / MASS;
     q_m              = CHARGE / MASS;
     qdt_mdp          = CHARGE * mesh->dt / (MASS * dp);
     q2dt_dzdp        = CHARGE * CHARGE * mesh->dt / (mesh->dz * dp);
-    double sqrt3q2n0dpdz    = M_SQRT3 * CHARGE * CHARGE * N_0 * dp * mesh->dz;
+    double sqrt3q2n0dpdz    = M_SQRT3 * CHARGE * CHARGE * N0 * dp * mesh->dz;
     double twicepir_l       = 2.e6 * M_PI * GSL_CONST_MKSA_ELECTRON_CHARGE * GSL_CONST_MKSA_ELECTRON_CHARGE / (GSL_CONST_MKSA_MASS_ELECTRON * GSL_CONST_MKSA_SPEED_OF_LIGHT * GSL_CONST_MKSA_SPEED_OF_LIGHT);
     twicepisqrt3q2n0dpdzr_l = sqrt3q2n0dpdz*twicepir_l;
     q2_m2            = CHARGE * CHARGE / (MASS * MASS);
@@ -356,7 +352,7 @@ double PFC::KineticEnergy(double* ax, double* ay, int left_bound, int right_boun
             energy += (sqrt(1. + a2i + p2[j]) + sqrt(1. + a2i1 + p2[j]) - 2.) * *(f1+ii+j);
     }
 
-    return energy * .5 * fabs(CHARGE) * MASS * N_0 * dp * mesh->dz;
+    return energy * .5 * fabs(CHARGE) * MASS * N0 * dp * mesh->dz;
 }
 
 void PFC::SaveConcentrationTxt(std::string filename)
@@ -455,7 +451,7 @@ void PFC::CalcConcDstr(float* n)
         int ii = i*MAX_P;
         for (int j = 0; j < MAX_P; j++)
             n[i] += float(*(f1+ii+j));
-        n[i] *= float(N_0*dp);
+        n[i] *= float(N0*dp);
     }
 }
 

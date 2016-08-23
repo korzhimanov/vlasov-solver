@@ -24,12 +24,12 @@
 class Mesh
 {
 public:
-    double dz,
-           dt,
-           dt_dz;
     int ppw,
         MAX_Z,
         MAX_T;
+    double dz,
+           dt,
+           dt_dz;
 public:
     Mesh();
     Mesh(pyinput*, int *);

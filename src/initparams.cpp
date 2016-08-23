@@ -27,7 +27,6 @@ InitParams::InitParams(pyinput* i, std::string dn, Mesh* m, int* err) : mesh(m),
 
 InitParams::~InitParams()
 {
-    delete fixed_ions_profile;
     delete pulse_x;
     delete pulse_y;
 }
@@ -39,12 +38,10 @@ int InitParams::Init(std::string dn)
     int tpi;
     double tpf;
 
-    tpi    =  1; if ( !in->SetPositive("NUM_SP",   &tpi) ) return 300; NUM_SP = tpi;
     THETA = in->GetDouble("THETA");
     if (THETA < 0. && THETA >= 0.5*M_PI)
         std::cout << "Invalid incident angle! It should be between 0 and pi/2." << std::endl;
 
-    fixed_ions_profile = new pFunc(in->GetFunc("FIXED_IONS_PROFILE"));
 
     pulse_x = new pFunc(in->GetFunc("PULSE_X"));
     pulse_y = new pFunc(in->GetFunc("PULSE_Y"));

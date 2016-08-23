@@ -38,24 +38,23 @@
 */
 class PFC
 {
-public:
-    double N_0, // critical concentration in the boosted frame (useful for simulation of oblique irradiation)
-           P0; // initial mean momentum along y-axis (useful for simulation of oblique irradiation in boosted frame)
 private:
     double *f1,
            *f2;
     Mesh *mesh;
+    double N0, // critical concentration in a boosted frame (useful for simulation of oblique irradiation)
+           P0; // initial mean momentum along y-axis (useful for simulation of oblique irradiation in boosted frame)
     int MAX_P, // number of steps in momentum space
         type; // type of the particle
     double
         MASS, // particle mass
         CHARGE, // particle charge
         T_init, // initial temperature
-        MEAN_P, // mean momentum
+        MEAN_P, // mean momentum along z-axis
         dp; // mesh step in momentum space
     double maxf; // maximal value of the distribution function
     double vdt_dz; // projections of velocity in phase space
-    const double onesixth;
+    const double onesixth; // just a constant equal to 1/6
     double res, tmp, fold;
     int new_cell;
     double flux_part;
@@ -65,13 +64,13 @@ private:
 public:
 //------constructors---------------------------------------------------
     PFC();
-    PFC(int particle_type, pyinput *in, Mesh *grid);
+    PFC(int particle_type, pyinput *in, Mesh *grid, double *n0, double *p0);
 //------destructor-----------------------------------------------------
     ~PFC();
 
 //------initializing---------------------------------------------------
     // initializes all parameters, allocates memory and fills it with zeros
-    void Init(int particle_type, pyinput *in, Mesh *grid);
+    void Init(int particle_type, pyinput *in, Mesh *grid, double *n0, double *p0);
     void AllocMemory();
     void SetDistribution();
 

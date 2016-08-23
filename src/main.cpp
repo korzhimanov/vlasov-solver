@@ -101,10 +101,10 @@ int main(int argc, char **argv)
     InitParams init_params(&in, output_folder_name, &mesh, &err);
     if (err != 0) {std::cout << "Initialization failed! Returning code is " << err << std::endl; return err;}
 
-    Solver S(&init_params);
+    Solver S(&init_params, &in, &mesh, &err);
 
     S.InitFields();
-    S.InitPlasma();
+    S.plasmas->InitDistribution();
     S.InitTestParticles();
 
     S.CreateDirs();
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
     {
         // LongField
         t = t1 = get_time();
-        S.CalcLongFields();
+        S.plasmas->CalcLongFields();
         t2 = get_time();
         std::cout << std::setw(10) << (t2-t1);
 
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 
         // DstrFunc
         t1 = t2;
-        S.CalcDstrFunc();
+        S.plasmas->CalcDstrFunc();
         t2 = get_time();
         std::cout << std::setw(10) << (t2-t1);
 
