@@ -274,12 +274,9 @@ void Output::SavePrtData(int k)
         std::ofstream *out_file;
         for (int i = 0; i < solver->particles->particles_number; i++)
         {
-            char file_path[256];
-            strcpy(file_path, output_directory_name.c_str());
-            char file_name[256];
-            sprintf(file_name, "particles/particle%06d.txt", i);
-            strcat(file_path, file_name);
-            out_file = new std::ofstream(file_path, std::ios_base::app);
+            std::stringstream file_path;
+            file_path << output_directory_name << "particles/particle" << std::setfill('0') << std::setw(6) << i << ".txt";
+            out_file = new std::ofstream(file_path.str().c_str(), std::ios_base::app);
             *out_file << solver->particles->prt[i].r[0] << "\t" << solver->particles->prt[i].r[1] << "\t" << solver->particles->prt[i].r[2] << "\t" << solver->particles->prt[i].p[0] << "\t" << solver->particles->prt[i].p[1] << "\t" << solver->particles->prt[i].p[2] << std::endl;
             out_file->close();
             delete out_file;
