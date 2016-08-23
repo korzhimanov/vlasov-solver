@@ -27,7 +27,7 @@
 #include <cstdio>
 #include "mymath.h"
 #include "file_saving.h"
-#include "pyinput.h"
+#include "initparams.h"
 #include "fdtd.h"
 #include "pfc.h"
 #include "particle.h"
@@ -40,41 +40,25 @@
 class Solver
 {
     public:
-        // general parameters
-        int ppw; Mesh *mesh;
-        double THETA;
-        // plasma parameters
-        int NUM_SP;
-        // pulse parameters
-        pFunc *pulse_x, *pulse_y;
-        // output parameters
-        std::string output_directory_name;
-        bool save_fields, save_concs, save_dstr;
-        int save_dt, save_fields_dt, save_concs_dt, save_dstr_dt;
-        std::string save_format, save_fields_format, save_concs_format, save_dstr_format;
-        // particles
-        Particle *prt; int NUM_PRT, start_point; double MASS_PRT, CHARGE_PRT, interval;
+        // initial parameters
+        InitParams *params;
 
+        // variables containing data
+        Particle *prt; // particles
         double *fixed_ions_conc; // concentration of fixed ions
-        pFunc *fixed_ions_profile; // fixed ions concentration profile function
         FDTD *fdtd; // FDTD - class
         PFC *pfc; // PFC - class
-        int source; // position of a source of an electromagnetic wave in respect to a PML-layer
         double *ax, *ay, *a2; // vector potential
         double *ez; // longitudinal field
 
-        char *main_dir;
-        FILE *output;
-
-        pyinput *in;
-
+        // auxiliary variables
         double em_flux; // flux density of electromagnetic field
         double electrostatic_energy, laser_energy, *plasma_energy, plasma_energy_0;
 
     public:
 //------constructors---------------------------------------------------
         Solver();
-        Solver(std::string, std::string);
+        Solver(InitParams*);
 //------destructor-----------------------------------------------------
         ~Solver();
 
@@ -86,41 +70,40 @@ class Solver
         void InitTestParticles();
         void CreateDirs();
         void SaveInput(std::string file);
-        void InitOutput(std::string file);
 
 //------calculations---------------------------------------------------
         void MoveParticles();
         inline void CalcSources(double t)
         {
-            fdtd->exl =   pulse_x->call((double)(t - .5*mesh->dz));
-            fdtd->eyl =   pulse_y->call((double)(t - .5*mesh->dz));
-            fdtd->hxl = - pulse_y->call((double)(t + .5*mesh->dt));
-            fdtd->hyl =   pulse_x->call((double)(t + .5*mesh->dt));
+            fdtd->exl =   params->pulse_x->call((double)(t - .5*params->mesh->dz));
+            fdtd->eyl =   params->pulse_y->call((double)(t - .5*params->mesh->dz));
+            fdtd->hxl = - params->pulse_y->call((double)(t + .5*params->mesh->dt));
+            fdtd->hyl =   params->pulse_x->call((double)(t + .5*params->mesh->dt));
         }
 
         /**
-         * \todo Change 0.5*pfc->N_0*mesh->dz to a single constant
+         * \todo Change 0.5*pfc->N_0*params->mesh->dz to a single constant
          */
         inline void CalcLongFields()
         {
             // calculates longitudinal field
-            memset(ez, 0, sizeof(double)*(mesh->MAX_Z+1));
-            for (int sp = 0; sp < NUM_SP; sp++)
+            memset(ez, 0, sizeof(double)*(params->mesh->MAX_Z+1));
+            for (int sp = 0; sp < params->NUM_SP; sp++)
                 pfc[sp].CalcLongitudinalField(ez);
 
-            ez[0] += 0.5*pfc->N_0*mesh->dz*fixed_ions_conc[0];
-            for (int i = 1; i < mesh->MAX_Z; i++)
-                ez[i] += ez[i-1] + 0.5*pfc->N_0*mesh->dz*(fixed_ions_conc[i]+fixed_ions_conc[i-1]);
-            ez[mesh->MAX_Z] += 0.5*pfc->N_0*mesh->dz*fixed_ions_conc[mesh->MAX_Z-1];
+            ez[0] += 0.5*pfc->N_0*params->mesh->dz*fixed_ions_conc[0];
+            for (int i = 1; i < params->mesh->MAX_Z; i++)
+                ez[i] += ez[i-1] + 0.5*pfc->N_0*params->mesh->dz*(fixed_ions_conc[i]+fixed_ions_conc[i-1]);
+            ez[params->mesh->MAX_Z] += 0.5*pfc->N_0*params->mesh->dz*fixed_ions_conc[params->mesh->MAX_Z-1];
         }
 
         inline void CalcTransFields()
         {
             // evaluates vector potential
-            for (int i = 0; i <= mesh->MAX_Z; i++)
+            for (int i = 0; i <= params->mesh->MAX_Z; i++)
             {
-                ax[i] -= fdtd->ex[i]*mesh->dt;
-                ay[i] -= fdtd->ey[i]*mesh->dt;
+                ax[i] -= fdtd->ex[i]*params->mesh->dt;
+                ay[i] -= fdtd->ey[i]*params->mesh->dt;
                 a2[i] = ax[i]*ax[i]+ay[i]*ay[i];
             }
 
@@ -131,27 +114,28 @@ class Solver
         }
 
         /**
-         * \todo Change 0.5*sin(THETA)*pfc->N_0*mesh->dz to a single constant
+         * \todo Change 0.5*sin(params->THETA)*pfc->N_0*params->mesh->dz to a single constant
          */
         inline void FieldGeneration()
         {
             // field generation by plasma currents
-            for (int sp = 0; sp < NUM_SP; sp++)
+            for (int sp = 0; sp < params->NUM_SP; sp++)
                 pfc[sp].CalcCurrent(fdtd, ax, ay, a2);
 
-            fdtd->ey[0] -= 0.5*sin(THETA)*pfc->N_0*mesh->dz*fixed_ions_conc[0];
-            for (int i = 1; i < mesh->MAX_Z; i++)
-                fdtd->ey[i] -= 0.5*sin(THETA)*pfc->N_0*mesh->dz*(fixed_ions_conc[i]+fixed_ions_conc[i-1]);
-            fdtd->ey[mesh->MAX_Z] -= 0.5*sin(THETA)*pfc->N_0*mesh->dz*fixed_ions_conc[mesh->MAX_Z-1];
+            fdtd->ey[0] -= 0.5*sin(params->THETA)*pfc->N_0*params->mesh->dz*fixed_ions_conc[0];
+            for (int i = 1; i < params->mesh->MAX_Z; i++)
+                fdtd->ey[i] -= 0.5*sin(params->THETA)*pfc->N_0*params->mesh->dz*(fixed_ions_conc[i]+fixed_ions_conc[i-1]);
+            fdtd->ey[params->mesh->MAX_Z] -= 0.5*sin(params->THETA)*pfc->N_0*params->mesh->dz*fixed_ions_conc[params->mesh->MAX_Z-1];
         }
 
         inline void CalcDstrFunc()
         {
-            for (int sp = 0; sp < NUM_SP; sp++)
+            for (int sp = 0; sp < params->NUM_SP; sp++)
                 pfc[sp].MakeStep(ez, ax, ay);
         }
 
 //------saving data----------------------------------------------------
+        void InitOutput(std::string);
         void SaveFields(int k); // saving fields data in files
         void SaveConcs(int k); // saving concentarations data in files
         void SaveDstrFunc(int k); // saving distribution functions data in files
@@ -160,33 +144,20 @@ class Solver
         void SaveResults();
 
     private:
-//------miscellaneous--------------------------------------------------
-        bool SetNotNegative(pyinput *in, std::string name, int *var);
-        bool SetPositive(pyinput *in, std::string name, int *var);
-        bool SetPositive(pyinput *in, std::string name, double *var);
-        bool SetFormat(pyinput *in, std::string name, std::string *var);
 };
 
-Solver::Solver(std::string file_name = "input.py", std::string directory_name = "output")
+Solver::Solver(InitParams *p)
 {
-    int err = InitVars(file_name, directory_name);
-    if( err == 0 )
-    {
-        std::cout << "Initializing succesful!" << std::endl;
-        AllocMemory();
-    }
-    else
-        std::cout << "Error! Initializing failed! Returning code is " << err << std::endl;
+    params = p;
+    pfc = new PFC[params->NUM_SP];
+    for (int sp = 0; sp < params->NUM_SP; sp++)
+        pfc[sp].Init(sp, params->in, params->mesh);
+    AllocMemory();
 }
 
 Solver::~Solver()
 {
-    delete fixed_ions_profile;
-    delete pulse_x;
-    delete pulse_y;
-
-    delete mesh;
-
+    fclose(params->output);
     delete[] pfc;
 
     delete[] fixed_ions_conc;
@@ -197,174 +168,101 @@ Solver::~Solver()
     delete[] a2;
     delete[] ez;
 
-    if (NUM_PRT > 0) delete[] prt;
+    if (params->NUM_PRT > 0) delete[] prt;
 
-    delete[] main_dir;
     delete[] plasma_energy;
-
-    delete in;
 }
 
 int Solver::InitVars(std::string file_name, std::string directory_name)
 {
-    output_directory_name = directory_name;
-
-    mesh = new Mesh;
-    in = new pyinput;
-
-    std::cout << "Reading input file " << file_name << " ... " << std::endl;
-    in->ReadFile(file_name);
-    std::cout << "done!" << std::endl;
-
-    int tpi;
-    double tpf;
-
-    ppw    = 16; if ( SetPositive(in,   "ppw",    &ppw) ) return 100;
-    tpi    = 32; if ( SetPositive(in, "MAX_Z",    &tpi) ) return 200; mesh->MAX_Z = tpi;
-    tpi    = 32; if ( SetNotNegative(in, "MAX_T", &tpi) ) return 210; mesh->MAX_T = tpi;
-    NUM_SP =  1; if ( SetPositive(in,"NUM_SP", &NUM_SP) ) return 300;
-    tpf = 2.*M_PI/ppw; if ( SetPositive(in, "dz", &tpf) ) return 400; mesh->dz = tpf;
-    tpf = 2.*M_PI/ppw; if ( SetPositive(in, "dt", &tpf) ) return 410; mesh->dt = tpf;
-    mesh->dt_dz = mesh->dt/mesh->dz;
-    THETA = in->GetDouble("THETA");
-    if (THETA < 0. && THETA >= 0.5*M_PI)
-        std::cout << "Invalid incident angle! It should be between 0 and pi/2." << std::endl;
-
-    pfc = new PFC[NUM_SP];
-    for (int sp = 0; sp < NUM_SP; sp++)
-        pfc[sp].Init(sp, in, mesh);
-
-    fixed_ions_profile = new pFunc(in->GetFunc("FIXED_IONS_PROFILE"));
-
-    pulse_x = new pFunc(in->GetFunc("PULSE_X"));
-    pulse_y = new pFunc(in->GetFunc("PULSE_Y"));
-    source = 1; if ( SetPositive(in, "source", &source) ) return 1400;
-
-    NUM_PRT = 0; if ( SetNotNegative(in, "NUM_PRT", &NUM_PRT) ) return  1600;
-    if (NUM_PRT > 0)
-    {
-        start_point =  0; if ( SetNotNegative(in, "start_point", &start_point) ) return  1610;
-        interval    = 1.; if ( SetPositive(in,    "interval", &interval   ) ) return  1620;
-        MASS_PRT    = 1.; if ( SetPositive(in,    "MASS_PRT", &MASS_PRT   ) ) return  1630;
-        CHARGE_PRT  = in->GetDouble("CHARGE_PRT");
-    }
-
-    save_fields = in->GetInt("save_fields");
-    save_concs  = in->GetInt("save_concs");
-    save_dstr   = in->GetInt("save_dstr");
-
-    if ( (save_fields || save_concs || save_dstr) == true)
-    {
-        save_dt     =   ppw; if ( SetPositive(in,     "save_dt", &save_dt)    ) return 1410;
-        save_format = "txt"; if (   SetFormat(in, "save_format", &save_format)) return 1420;
-
-        if (save_fields == true)
-        {
-            save_fields_dt     =  0; if ( SetNotNegative(in,     "save_fields_dt", &save_fields_dt)    ) return 1430;
-            if (save_fields_dt == 0)
-                save_fields_dt = save_dt;
-            save_fields_format = ""; if (      SetFormat(in, "save_fields_format", &save_fields_format)) return 1431;
-            if (save_fields_format == "")
-                save_fields_format = save_format;
-        }
-        if (save_concs == true)
-        {
-            save_concs_dt     =  0; if ( SetNotNegative(in,     "save_concs_dt", &save_concs_dt)    ) return 1440;
-            if (save_concs_dt == 0)
-                save_concs_dt = save_dt;
-            save_concs_format = ""; if (      SetFormat(in, "save_concs_format", &save_concs_format)) return 1441;
-            if (save_concs_format == "")
-                save_concs_format = save_format;
-        }
-        if (save_dstr == true)
-        {
-            save_dstr_dt     =  0; if ( SetNotNegative(in,     "save_dstr_dt", &save_dstr_dt)    ) return 1450;
-            if (save_dstr_dt == 0)
-                save_dstr_dt = save_dt;
-            save_dstr_format = ""; if (      SetFormat(in, "save_dstr_format", &save_dstr_format)) return 1451;
-            if (save_dstr_format == "")
-                save_dstr_format = save_format;
-        }
-    }
-
+    // moved to InitParams::Init()
     return 0;
 }
 
 void Solver::AllocMemory()
 {
     // memory allocation for fixed ions
-    fixed_ions_conc = new double[mesh->MAX_Z];
-    for (int sp = 0; sp < NUM_SP; sp++)
+    fixed_ions_conc = new double[params->mesh->MAX_Z];
+    for (int sp = 0; sp < params->NUM_SP; sp++)
         pfc[sp].AllocMemory();
 
     // memory allocation for electromagnetic fields
     fdtd = new FDTD;
-    ax = new double[mesh->MAX_Z + 1];
-    ay = new double[mesh->MAX_Z + 1];
-    a2 = new double[mesh->MAX_Z + 1];
-    ez = new double[mesh->MAX_Z + 1];
+    ax = new double[params->mesh->MAX_Z + 1];
+    ay = new double[params->mesh->MAX_Z + 1];
+    a2 = new double[params->mesh->MAX_Z + 1];
+    ez = new double[params->mesh->MAX_Z + 1];
 
     // memory allocation for test particles
-    if (NUM_PRT > 0) prt = new Particle[NUM_PRT];
+    if (params->NUM_PRT > 0) prt = new Particle[params->NUM_PRT];
 
-    main_dir = new char[512];
-    plasma_energy = new double[NUM_SP];
+    plasma_energy = new double[params->NUM_SP];
+}
+
+void Solver::InitOutput(std::string fn)
+{
+    params->output = fopen((params->output_directory_name + fn).c_str(), "w+");
+    fprintf(params->output, " Step |   Neutrality   |");
+    for (int sp = 0; sp < params->NUM_SP; sp++)
+        fprintf(params->output, "       W_%d       |", sp);
+    fprintf(params->output, "     W_el-st    |     W_laser    |     EM Flux    |     W_total    |\n");
+    fflush(params->output);
 }
 
 void Solver::InitFields()
 {
-    fdtd->Init(mesh, source);
-    fdtd->InitPML(int(1./mesh->dz), 10.);
-    mymath::zeros(ax, mesh->MAX_Z+1);
-    mymath::zeros(ay, mesh->MAX_Z+1);
-    mymath::zeros(a2, mesh->MAX_Z+1);
-    mymath::zeros(ez, mesh->MAX_Z+1);
+    fdtd->Init(params->mesh, params->source);
+    fdtd->InitPML(int(1./params->mesh->dz), 10.);
+    mymath::zeros(ax, params->mesh->MAX_Z+1);
+    mymath::zeros(ay, params->mesh->MAX_Z+1);
+    mymath::zeros(a2, params->mesh->MAX_Z+1);
+    mymath::zeros(ez, params->mesh->MAX_Z+1);
 
     em_flux = 0.;
 }
 
 void Solver::InitPlasma()
 {
-    for (int i = 0; i < mesh->MAX_Z; i++)
-        fixed_ions_conc[i] = fixed_ions_profile->call(i);
-    for (int sp = 0; sp < NUM_SP; sp++)
+    for (int i = 0; i < params->mesh->MAX_Z; i++)
+        fixed_ions_conc[i] = params->fixed_ions_profile->call(i);
+    for (int sp = 0; sp < params->NUM_SP; sp++)
         pfc[sp].SetDistribution();
 }
 
 void Solver::InitTestParticles()
 {
-    if (NUM_PRT > 0) for (int i = 0; i < NUM_PRT; i++)
+    if (params->NUM_PRT > 0) for (int i = 0; i < params->NUM_PRT; i++)
     {
-        prt[i].q = int(CHARGE_PRT);
-        prt[i].m = MASS_PRT;
+        prt[i].q = int(params->CHARGE_PRT);
+        prt[i].m = params->MASS_PRT;
         for (int j = 0; j < 3; j++)
         {
             prt[i].r[j] = 0.;
             prt[i].p[j] = 0.;
         }
-        prt[i].p[1] = tan(THETA);
-        prt[i].r[2] = (start_point + interval*i)*mesh->dz;
+        prt[i].p[1] = tan(params->THETA);
+        prt[i].r[2] = (params->start_point + params->interval*i)*params->mesh->dz;
     }
 }
 
 void Solver::CreateDirs()
 {
-    // creating main directory for saving
+    // creating main directory for output
     {
-        filesaving::create_dir(main_dir, "", (output_directory_name + "/").c_str());
+        filesaving::create_dir("", (params->output_directory_name).c_str());
     }
 
     // creating directory for test particles
-    if (NUM_PRT > 0)
+    if (params->NUM_PRT > 0)
     {
-        filesaving::create_dir(main_dir, "particles/");
+        filesaving::create_dir(params->output_directory_name, "particles/");
     }
 
     // creating directories for storing distribution functions in files
-    if (save_dstr == true)
-        for (int sp = 0; sp < NUM_SP; sp++)
+    if (params->save_dstr == true)
+        for (int sp = 0; sp < params->NUM_SP; sp++)
         {
-            filesaving::create_dir(main_dir, "dstr_func%d/", sp);
+            filesaving::create_dir(params->output_directory_name, "dstr_func%d/", sp);
         }
 }
 
@@ -372,56 +270,46 @@ void Solver::SaveInput(std::string file)
 {
     // storing information about input parameters
     FILE *input;
-    input = filesaving::open_file("w+", main_dir, file.c_str());
+    input = filesaving::open_file("w+", params->output_directory_name, file.c_str());
     fprintf(input, "\nVlasov-Maxwell code. Developed by Artem Korzhimanov and Arkady Gonoskov. mailto: kav@ufp.appl.sci-nnov.ru\n");
 
     fprintf(input, "\nGENERAL PARAMETERS\n\n");
-    fprintf(input, "\tSpace cells per wavelength = %d\n", ppw);
-    fprintf(input, "\tSpace step = %f Wavelengths\n", .5*M_1_PI*mesh->dz);
-    fprintf(input, "\tTotal space cells = %d\n", mesh->MAX_Z);
-    fprintf(input, "\tTotal space size = %f Wavelengths\n", (double)mesh->MAX_Z/ppw);
-    fprintf(input, "\tTime step = %f Waveperiods\n", .5*M_1_PI*mesh->dt);
-    fprintf(input, "\tTotal time steps = %d\n", mesh->MAX_T);
-    fprintf(input, "\tTotal running time = %f Waveperiods\n", .5*M_1_PI*mesh->MAX_T*mesh->dt);
+    fprintf(input, "\tSpace cells per wavelength = %d\n", params->ppw);
+    fprintf(input, "\tSpace step = %f Wavelengths\n", .5*M_1_PI*params->mesh->dz);
+    fprintf(input, "\tTotal space cells = %d\n", params->mesh->MAX_Z);
+    fprintf(input, "\tTotal space size = %f Wavelengths\n", (double)params->mesh->MAX_Z/params->ppw);
+    fprintf(input, "\tTime step = %f Waveperiods\n", .5*M_1_PI*params->mesh->dt);
+    fprintf(input, "\tTotal time steps = %d\n", params->mesh->MAX_T);
+    fprintf(input, "\tTotal running time = %f Waveperiods\n", .5*M_1_PI*params->mesh->MAX_T*params->mesh->dt);
 
     fprintf(input, "\nPLASMA PARAMETERS\n\n");
-    for (int sp = 0; sp < NUM_SP; sp++)
+    for (int sp = 0; sp < params->NUM_SP; sp++)
     {
         fprintf(input, "\n\tSpecies %d\n\n", sp);
         pfc[sp].SaveInput(input);
     }
 
     fprintf(input, "\nTEST PARTICLES PARAMETERS\n\n");
-    fprintf(input, "\tNumber of particles = %d\n", NUM_PRT);
-    if (NUM_PRT > 0)
+    fprintf(input, "\tNumber of particles = %d\n", params->NUM_PRT);
+    if (params->NUM_PRT > 0)
     {
-        fprintf(input, "\tMass of particles = %f\n", MASS_PRT);
-        fprintf(input, "\tCharge of particles = %f\n", CHARGE_PRT);
-        fprintf(input, "\tParticles are equidistantly deposited from %f to %f Wavelenths\n", (float)start_point/ppw, (float)(start_point + interval*NUM_PRT)/ppw);
+        fprintf(input, "\tMass of particles = %f\n", params->MASS_PRT);
+        fprintf(input, "\tCharge of particles = %f\n", params->CHARGE_PRT);
+        fprintf(input, "\tParticles are equidistantly deposited from %f to %f Wavelenths\n", (float)params->start_point/params->ppw, (float)(params->start_point + params->interval*params->NUM_PRT)/params->ppw);
     }
 
     fprintf(input, "\nOUTPUT PARAMETERS\n\n");
-    if (save_fields == true)
-        fprintf(input, "\tFields are being saved every %d steps or every %f Waveperiods in files in %s-format\n", save_fields_dt, (double)save_fields_dt/ppw, save_fields_format.c_str());
+    if (params->save_fields == true)
+        fprintf(input, "\tFields are being saved every %d steps or every %f Waveperiods in files in %s-format\n", params->save_fields_dt, (double)params->save_fields_dt/params->ppw, params->save_fields_format.c_str());
     else fprintf(input, "\tFields are not being saved\n");
-    if (save_concs == true)
-        fprintf(input, "\tConcentration distributions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", save_concs_dt, (double)save_concs_dt/ppw, save_concs_format.c_str());
+    if (params->save_concs == true)
+        fprintf(input, "\tConcentration distributions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", params->save_concs_dt, (double)params->save_concs_dt/params->ppw, params->save_concs_format.c_str());
     else fprintf(input, "\tConcentration distributions are not being saved\n");
-    if (save_dstr == true)
-        fprintf(input, "\tDistribution functions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", save_dstr_dt, (double)save_dstr_dt/ppw, save_dstr_format.c_str());
+    if (params->save_dstr == true)
+        fprintf(input, "\tDistribution functions are being saved every %d steps or every %f Waveperiods in files in %s-format\n", params->save_dstr_dt, (double)params->save_dstr_dt/params->ppw, params->save_dstr_format.c_str());
     else fprintf(input, "\tDistribution functions are not being saved\n");
 
     filesaving::close_file(input);
-}
-
-void Solver::InitOutput(std::string file)
-{
-    output = filesaving::open_file("w+", main_dir, file.c_str());
-    fprintf(output, " Step |   Neutrality   |");
-    for (int sp = 0; sp < NUM_SP; sp++)
-        fprintf(output, "       W_%d       |", sp);
-    fprintf(output, "     W_el-st    |     W_laser    |     EM Flux    |     W_total    |\n");
-    filesaving::close_file(output);
 }
 
 void Solver::MoveParticles()
@@ -434,24 +322,24 @@ void Solver::MoveParticles()
     double *E = new double[3];
     double *B = new double[3];
     B[2] = 0;
-    for (i = 0; i < NUM_PRT; i++)
+    for (i = 0; i < params->NUM_PRT; i++)
     {
-        z = int(floor(prt[i].r[2]/mesh->dz));
-        if (z < 0 || z >= mesh->MAX_Z) continue;
-        dz = prt[i].r[2]/mesh->dz - floor(prt[i].r[2]/mesh->dz);
+        z = int(floor(prt[i].r[2]/params->mesh->dz));
+        if (z < 0 || z >= params->mesh->MAX_Z) continue;
+        dz = prt[i].r[2]/params->mesh->dz - floor(prt[i].r[2]/params->mesh->dz);
 
         E[0] = (1. - dz) * fdtd->ex[z] + dz * fdtd->ex[z+1];
         E[1] = (1. - dz) * fdtd->ey[z] + dz * fdtd->ey[z+1];
 
-        z = int(floor(prt[i].r[2]/mesh->dz - 0.5));
-        if (z < 0 || z >= mesh->MAX_Z-1) continue;
-        dz = prt[i].r[2]/mesh->dz - floor(prt[i].r[2]/mesh->dz);
+        z = int(floor(prt[i].r[2]/params->mesh->dz - 0.5));
+        if (z < 0 || z >= params->mesh->MAX_Z-1) continue;
+        dz = prt[i].r[2]/params->mesh->dz - floor(prt[i].r[2]/params->mesh->dz);
 
         E[2] = (1. - dz) * ez[z] + dz * ez[z+1];
         B[0] = (1. - dz) * fdtd->hx[z] + dz * fdtd->hx[z+1];
         B[1] = (1. - dz) * fdtd->hy[z] + dz * fdtd->hy[z+1];
 
-        prt[i].MakeStep(mesh->dt, E, B);
+        prt[i].MakeStep(params->mesh->dt, E, B);
     }
 
     delete[] E;
@@ -460,45 +348,45 @@ void Solver::MoveParticles()
 
 void Solver::SaveFields(int k)
 {
-    if (save_fields == true && k%save_fields_dt == 0)
+    if (params->save_fields == true && k%params->save_fields_dt == 0)
     {
         std::string format;
-        if (save_fields_format == "")
-            format = save_format;
+        if (params->save_fields_format == "")
+            format = params->save_format;
         else
-            format = save_fields_format;
+            format = params->save_fields_format;
 
         if (format == "txt")
         {
-            filesaving::save_file_1D(fdtd->ex, mesh->MAX_Z, main_dir, "ex.txt");
-            filesaving::save_file_1D(fdtd->ey, mesh->MAX_Z, main_dir, "ey.txt");
-            filesaving::save_file_1D(fdtd->hx, mesh->MAX_Z, main_dir, "hx.txt");
-            filesaving::save_file_1D(fdtd->hy, mesh->MAX_Z, main_dir, "hy.txt");
-            filesaving::save_file_1D(ez, mesh->MAX_Z, main_dir, "ez.txt");
+            filesaving::save_file_1D(fdtd->ex, params->mesh->MAX_Z, params->output_directory_name, "ex.txt");
+            filesaving::save_file_1D(fdtd->ey, params->mesh->MAX_Z, params->output_directory_name, "ey.txt");
+            filesaving::save_file_1D(fdtd->hx, params->mesh->MAX_Z, params->output_directory_name, "hx.txt");
+            filesaving::save_file_1D(fdtd->hy, params->mesh->MAX_Z, params->output_directory_name, "hy.txt");
+            filesaving::save_file_1D(ez, params->mesh->MAX_Z, params->output_directory_name, "ez.txt");
 
-            filesaving::save_file_1D(a2, mesh->MAX_Z, main_dir, "vecpot2.txt");
+            filesaving::save_file_1D(a2, params->mesh->MAX_Z, params->output_directory_name, "vecpot2.txt");
         }
 
         if (format == "bin")
         {
-            filesaving::save_file_1D_bin(fdtd->ex, mesh->MAX_Z, main_dir, "ex.bin");
-            filesaving::save_file_1D_bin(fdtd->ey, mesh->MAX_Z, main_dir, "ey.bin");
-            filesaving::save_file_1D_bin(fdtd->hx, mesh->MAX_Z, main_dir, "hx.bin");
-            filesaving::save_file_1D_bin(fdtd->hy, mesh->MAX_Z, main_dir, "hy.bin");
-            filesaving::save_file_1D_bin(ez, mesh->MAX_Z, main_dir, "ez.bin");
+            filesaving::save_file_1D_bin(fdtd->ex, params->mesh->MAX_Z, params->output_directory_name, "ex.bin");
+            filesaving::save_file_1D_bin(fdtd->ey, params->mesh->MAX_Z, params->output_directory_name, "ey.bin");
+            filesaving::save_file_1D_bin(fdtd->hx, params->mesh->MAX_Z, params->output_directory_name, "hx.bin");
+            filesaving::save_file_1D_bin(fdtd->hy, params->mesh->MAX_Z, params->output_directory_name, "hy.bin");
+            filesaving::save_file_1D_bin(ez, params->mesh->MAX_Z, params->output_directory_name, "ez.bin");
 
-            filesaving::save_file_1D_bin(a2, mesh->MAX_Z, main_dir, "vecpot2.bin");
+            filesaving::save_file_1D_bin(a2, params->mesh->MAX_Z, params->output_directory_name, "vecpot2.bin");
         }
 
         if (format == "gzip")
         {
-            filesaving::save_file_1D_gzip(fdtd->ex, mesh->MAX_Z, main_dir, "ex.gz");
-            filesaving::save_file_1D_gzip(fdtd->ey, mesh->MAX_Z, main_dir, "ey.gz");
-            filesaving::save_file_1D_gzip(fdtd->hx, mesh->MAX_Z, main_dir, "hx.gz");
-            filesaving::save_file_1D_gzip(fdtd->hy, mesh->MAX_Z, main_dir, "hy.gz");
-            filesaving::save_file_1D_gzip(ez, mesh->MAX_Z, main_dir, "ez.gz");
+            filesaving::save_file_1D_gzip(fdtd->ex, params->mesh->MAX_Z, params->output_directory_name, "ex.gz");
+            filesaving::save_file_1D_gzip(fdtd->ey, params->mesh->MAX_Z, params->output_directory_name, "ey.gz");
+            filesaving::save_file_1D_gzip(fdtd->hx, params->mesh->MAX_Z, params->output_directory_name, "hx.gz");
+            filesaving::save_file_1D_gzip(fdtd->hy, params->mesh->MAX_Z, params->output_directory_name, "hy.gz");
+            filesaving::save_file_1D_gzip(ez, params->mesh->MAX_Z, params->output_directory_name, "ez.gz");
 
-            filesaving::save_file_1D_gzip(a2, mesh->MAX_Z, main_dir, "vecpot2.gz");
+            filesaving::save_file_1D_gzip(a2, params->mesh->MAX_Z, params->output_directory_name, "vecpot2.gz");
         }
 
     }
@@ -506,18 +394,18 @@ void Solver::SaveFields(int k)
 
 void Solver::SaveConcs(int k)
 {
-    if (save_concs == true && k%save_concs_dt == 0)
+    if (params->save_concs == true && k%params->save_concs_dt == 0)
     {
         std::string format;
-        if (save_concs_format == "")
-            format = save_format;
+        if (params->save_concs_format == "")
+            format = params->save_format;
         else
-            format = save_concs_format;
+            format = params->save_concs_format;
 
-        for (int sp = 0; sp < NUM_SP; sp++)
+        for (int sp = 0; sp < params->NUM_SP; sp++)
         {
             std::stringstream ss;
-            ss << main_dir << "conc" << sp;
+            ss << params->output_directory_name << "conc" << sp;
             if (format == "txt")
                 pfc[sp].SaveConcentrationTxt(ss.str());
 
@@ -532,18 +420,18 @@ void Solver::SaveConcs(int k)
 
 void Solver::SaveDstrFunc(int k)
 {
-    if (save_dstr == true && k%save_dstr_dt == 0)
+    if (params->save_dstr == true && k%params->save_dstr_dt == 0)
     {
         std::string format;
-        if (save_dstr_format == "")
-            format = save_format;
+        if (params->save_dstr_format == "")
+            format = params->save_format;
         else
-            format = save_dstr_format;
+            format = params->save_dstr_format;
 
-        for (int sp = 0; sp < NUM_SP; sp++)
+        for (int sp = 0; sp < params->NUM_SP; sp++)
         {
             std::stringstream ss;
-            ss << main_dir << "dstr_func" << sp << "/data" << std::setfill('0') << std::setw(8) << k;
+            ss << params->output_directory_name << "dstr_func" << sp << "/data" << std::setfill('0') << std::setw(8) << k;
             if (format == "txt")
                 pfc[sp].SaveDstrFunctionTxt(ss.str());
 
@@ -558,13 +446,13 @@ void Solver::SaveDstrFunc(int k)
 
 void Solver::SavePrtDat(int k)
 {
-    if (NUM_PRT > 0)
+    if (params->NUM_PRT > 0)
     {
         std::ofstream *out_file;
-        for (int i = 0; i < NUM_PRT; i++)
+        for (int i = 0; i < params->NUM_PRT; i++)
         {
             char file_path[256];
-            strcpy(file_path, main_dir);
+            strcpy(file_path, params->output_directory_name.c_str());
             char file_name[256];
             sprintf(file_name, "particles/particle%06d.txt", i);
             strcat(file_path, file_name);
@@ -578,27 +466,27 @@ void Solver::SavePrtDat(int k)
 
 void Solver::SaveOutput(int k, std::string file)
 {
-    if (k%ppw == 0)
+    if (k%params->ppw == 0)
     {
-        for (int sp = 0; sp < NUM_SP; sp++)
+        for (int sp = 0; sp < params->NUM_SP; sp++)
             plasma_energy[sp] = pfc[sp].KineticEnergy(ax, ay);
 
         laser_energy = fdtd->Energy();
 
         electrostatic_energy = 0.;
-        for (int i = 0; i <= mesh->MAX_Z; i++)
+        for (int i = 0; i <= params->mesh->MAX_Z; i++)
             electrostatic_energy += ez[i]*ez[i];
-        electrostatic_energy *= 0.5*mesh->dz;
+        electrostatic_energy *= 0.5*params->mesh->dz;
 
         FILE *output;
-        output = filesaving::open_file("a+", main_dir, file.c_str());
-        fprintf(output, "%06d|%16.8e|", k, ez[mesh->MAX_Z-1]);
-        for (int sp = 0; sp < NUM_SP; sp++)
+        output = filesaving::open_file("a+", params->output_directory_name, file.c_str());
+        fprintf(output, "%06d|%16.8e|", k, ez[params->mesh->MAX_Z-1]);
+        for (int sp = 0; sp < params->NUM_SP; sp++)
             fprintf(output, " %16.8e|", plasma_energy[sp]);
-        fprintf(output, "%16.8e|%16.8e|%16.8e|%16.8e|\n", electrostatic_energy, laser_energy, em_flux, mymath::sum(plasma_energy, NUM_SP)+electrostatic_energy+laser_energy-em_flux);
+        fprintf(output, "%16.8e|%16.8e|%16.8e|%16.8e|\n", electrostatic_energy, laser_energy, em_flux, mymath::sum(plasma_energy, params->NUM_SP)+electrostatic_energy+laser_energy-em_flux);
         filesaving::close_file(output);
 
-        if (k==0) plasma_energy_0 = mymath::sum(plasma_energy, NUM_SP);
+        if (k==0) plasma_energy_0 = mymath::sum(plasma_energy, params->NUM_SP);
     }
 }
 
@@ -606,41 +494,13 @@ void Solver::SaveResults()
 {
     FILE *en_out;
     en_out = filesaving::open_file("a+", "", "energy.txt");
-    double plasma_energy_1 = mymath::sum(plasma_energy, NUM_SP)+electrostatic_energy+laser_energy;
-    fprintf(en_out, "%.8g\t%.8g\t%.8g\n", plasma_energy_0, plasma_energy_1, (plasma_energy_1-plasma_energy_0)/(0.5));
+    double plasma_energy_1 = mymath::sum(plasma_energy, params->NUM_SP)+electrostatic_energy+laser_energy;
+    fprintf(en_out, "%.8g\t%.8g\t%.8g\n", plasma_energy_0, plasma_energy_1, 2.*(plasma_energy_1-plasma_energy_0));
     filesaving::close_file(en_out);
 
     en_out = filesaving::open_file("a+", "", "energy2.txt");
     fprintf(en_out, "%.8g\t", (plasma_energy_1-plasma_energy_0)/(0.5));
     filesaving::close_file(en_out);
-}
-
-bool Solver::SetNotNegative(pyinput *in, std::string name, int *var)
-{
-    *var = in->GetInt(name);
-    if ( *var >= 0 ) return 0;
-    else {std::cout << name + " mustnot be negative" << std::endl; return 1;}
-}
-
-bool Solver::SetPositive(pyinput *in, std::string name, int *var)
-{
-    *var = in->GetInt(name);
-    if ( *var > 0 ) return 0;
-    else {std::cout << name + " must be positive" << std::endl; return 1;}
-}
-
-bool Solver::SetPositive(pyinput *in, std::string name, double *var)
-{
-    *var = in->GetDouble(name);
-    if ( *var > 0. ) return 0;
-    else {std::cout << name + " must be positive" << std::endl; return 1;}
-}
-
-bool Solver::SetFormat(pyinput *in, std::string name, std::string *var)
-{
-    *var = in->GetString(name);
-    if (save_format == "txt" || save_format == "bin" || save_format ==  "gzip") return 0;
-    else {std::cout << name + " must be either 'txt' or 'bin' or 'gzip'" << std::endl; return 1;}
 }
 
 #endif // SOLVER_H

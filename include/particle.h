@@ -10,6 +10,7 @@
  * \brief The header file which defines Particle class
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
+ * \todo Change Charge to double
  */
 
 #ifndef PARTICLE_H

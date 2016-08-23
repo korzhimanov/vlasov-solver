@@ -87,7 +87,8 @@ int main(int argc, char **argv)
         while (i < argc);
     }
 
-    Solver S(input_file_name, output_folder_name);
+    InitParams init_params(input_file_name, output_folder_name);
+    Solver S(&init_params);
 
     S.InitFields();
     S.InitPlasma();
@@ -95,15 +96,15 @@ int main(int argc, char **argv)
 
     S.CreateDirs();
 
-    S.SaveInput("input_parameters");
     S.InitOutput("output");
+    S.SaveInput("input_parameters");
 
     double t0 = get_time();
     std::cout << std::setw(10) << "LongField" << std::setw(11) << "TransField" << std::setw(10) << "FieldGen" << std::setw(10) << "DstrFunc" << std::setw(10) << "Particles" << std::setw(10) << "SvFields" << std::setw(10) << "SvConcs" << std::setw(10) << "SvDstr" << std::setw(10) << "SvOutput" << std::setw(10) << "Step" << std::setw(20) << "Passed/ Estimated" << std::endl;
 
     double t1, t2, t;
     std::cout << std::fixed << std::setprecision(4);
-    for (int k = 0; k < S.mesh->MAX_T; k++)
+    for (int k = 0; k < init_params.mesh->MAX_T; k++)
     {
         // LongField
         t = t1 = get_time();
@@ -113,7 +114,7 @@ int main(int argc, char **argv)
 
         // TransField
         t1 = t2;
-        S.CalcSources( (double)k*S.mesh->dt );
+        S.CalcSources( (double)k*init_params.mesh->dt );
         S.CalcTransFields();
         t2 = get_time();
         std::cout << std::setw(11) << (t2-t1);
@@ -132,7 +133,7 @@ int main(int argc, char **argv)
 
         // Particles
         t1 = t2;
-        if (S.NUM_PRT > 0) S.MoveParticles();
+        if (init_params.NUM_PRT > 0) S.MoveParticles();
         t2 = get_time();
         std::cout << std::setw(10) << (t2-t1);
 
@@ -161,7 +162,7 @@ int main(int argc, char **argv)
         std::cout << std::setw(10) << (t2-t1);
         std::cout << std::setw(10) << (t2-t );
         std::cout << std::setprecision(2);
-        std::cout << std::setw(9) << (t2-t0) << "/ " << (t2-t0)/(k+1)*(S.mesh->MAX_T) << std::endl;
+        std::cout << std::setw(9) << (t2-t0) << "/ " << (t2-t0)/(k+1)*(init_params.mesh->MAX_T) << std::endl;
         std::cout << std::setprecision(4);
     }
 
@@ -169,7 +170,7 @@ int main(int argc, char **argv)
 
     std::cout << "Done!" << std::endl;
     t = get_time();
-    std::cout << "Full time: " << (t-t0) << " s (" << (t-t0)/S.mesh->MAX_T << " s per iteration)" << std::endl;
+    std::cout << "Full time: " << (t-t0) << " s (" << (t-t0)/init_params.mesh->MAX_T << " s per iteration)" << std::endl;
 
     return 0;
 }

@@ -13,13 +13,14 @@
  */
 
 #include "file_saving.h"
+#include <string>
 
 namespace filesaving {
 
-FILE* open_file(const char *mode, const char *main_dir, const char *name, ...)
+FILE* open_file(const char *mode, const std::string main_dir, const char *name, ...)
 {
     char temp[512];
-    strcpy(temp, main_dir);
+    strcpy(temp, main_dir.c_str());
     va_list var; va_start(var, name);
     char name1[512];
     vsprintf(name1, name, var);
@@ -92,7 +93,7 @@ void create_dir(char *out, const char *main_dir, const char *dir, ...)
 }
 
 // when creating directory put "/" at the end of its name
-void create_dir(const char *main_dir, const char *dir, ...)
+void create_dir(std::string main_dir, const char *dir, ...)
 {
     char command[512];
 #ifdef _WIN32
@@ -105,7 +106,7 @@ void create_dir(const char *main_dir, const char *dir, ...)
     char temp[256];
     vsprintf(temp, dir, var);
 
-    strcat(command, main_dir);
+    strcat(command, main_dir.c_str());
     strcat(command, temp);
 #ifdef _WIN32
     {
@@ -120,9 +121,9 @@ void create_dir(const char *main_dir, const char *dir, ...)
 
 #ifdef _WIN32
     sprintf(command, "mkdir ");
-    strcat(command, main_dir);
+    strcat(command, main_dir.c_str());
 #else
-    strcpy(command, main_dir);
+    strcpy(command, main_dir.c_str());
 #endif
     strcat(command, temp);
 
@@ -135,13 +136,13 @@ void create_dir(const char *main_dir, const char *dir, ...)
 #ifdef _WIN32
     system(command);
 #else
-    mkdir(command, 0777);
+    mkdir(command, 0755);
 #endif
 
     va_end(var);
 }
 
-void save_file_1D(float *a, const int num, const char *main_dir, const char *name, ...)
+void save_file_1D(float *a, const int num, const std::string main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -161,7 +162,7 @@ void save_file_1D(float *a, const int num, const char *main_dir, const char *nam
     va_end(var);
 }
 
-void save_file_1D(float *a, const int num, const int step, const char *main_dir, const char *name, ...)
+void save_file_1D(float *a, const int num, const int step, const std::string main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -180,7 +181,7 @@ void save_file_1D(float *a, const int num, const int step, const char *main_dir,
     va_end(var);
 }
 
-void save_file_1D(double *a, const int num, const char *main_dir, const char *name, ...)
+void save_file_1D(double *a, const int num, const std::string main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -200,7 +201,7 @@ void save_file_1D(double *a, const int num, const char *main_dir, const char *na
     va_end(var);
 }
 
-void save_file_1D(double *a, const int num, const int step, const char *main_dir, const char *name, ...)
+void save_file_1D(double *a, const int num, const int step, const std::string main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -218,7 +219,7 @@ void save_file_1D(double *a, const int num, const int step, const char *main_dir
     va_end(var);
 }
 
-void save_file_1D(int *a, const int num, const char *main_dir, const char *name, ...)
+void save_file_1D(int *a, const int num, const std::string main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -237,7 +238,7 @@ void save_file_1D(int *a, const int num, const char *main_dir, const char *name,
     va_end(var);
 }
 
-void save_file_1D(int *a, const int num, const int step, const char *main_dir, const char *name, ...)
+void save_file_1D(int *a, const int num, const int step, const std::string main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -255,7 +256,7 @@ void save_file_1D(int *a, const int num, const int step, const char *main_dir, c
     va_end(var);
 }
 
-void save_file_2D(double *a, int columns, int strings, const char *main_dir, const char *name, ...)
+void save_file_2D(double *a, int columns, int strings, const std::string main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
@@ -278,7 +279,7 @@ void save_file_2D(double *a, int columns, int strings, const char *main_dir, con
     va_end(var);
 }
 
-void save_file_2D_transpose(double *a, int columns, int strings, const char *main_dir, const char *name, ...)
+void save_file_2D_transpose(double *a, int columns, int strings, const std::string main_dir, const char *name, ...)
 {
     va_list var; va_start(var, name);
 
