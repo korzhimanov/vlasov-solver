@@ -31,6 +31,7 @@
 #include "fdtd.h"
 #include "plasmas.h"
 #include "particle.h"
+#include "testparticles.h"
 #include <string.h>
 
 /**
@@ -45,8 +46,8 @@ class Solver
 
         // variables containing data
         Plasmas *plasmas; // Plasmas
-        Particle *prt; // particles
         FDTD *fdtd; // FDTD - class
+        TestParticles *particles;
 
         // auxiliary variables
         double em_flux; // flux density of electromagnetic field
@@ -61,13 +62,10 @@ class Solver
 //------initialisation-------------------------------------------------
         int InitVars(std::string, std::string);
         void AllocMemory();
-        void InitTestParticles();
         void CreateDirs();
         void SaveInput(std::string file);
 
 //------calculations---------------------------------------------------
-        void MoveParticles();
-
         inline void CalcTransFields()
         {
             // evaluates vector potential
@@ -83,6 +81,8 @@ class Solver
 
             em_flux += fdtd->FluxIn();
         }
+
+        void MoveParticles();
 
         /**
          * \todo Change 0.5*sin(params->THETA)*pfc->N_0*params->mesh->dz to a single constant
@@ -116,6 +116,7 @@ Solver::Solver(InitParams* p, pyinput* in, Mesh* m, int* err) : params(p)
 {
     plasmas = new Plasmas(in, m, err);
     fdtd = new FDTD(in, m, err);
+    particles = new TestParticles(in, err);
     AllocMemory();
 }
 
@@ -127,7 +128,7 @@ Solver::~Solver()
 
     delete fdtd;
 
-    if (params->NUM_PRT > 0) delete[] prt;
+    delete particles;
 
     delete[] plasma_energy;
 }
@@ -140,9 +141,6 @@ int Solver::InitVars(std::string file_name, std::string directory_name)
 
 void Solver::AllocMemory()
 {
-    // memory allocation for test particles
-    if (params->NUM_PRT > 0) prt = new Particle[params->NUM_PRT];
-
     plasma_energy = new double[plasmas->species_number];
 }
 
@@ -157,22 +155,6 @@ void Solver::InitOutput(std::string fn)
     fflush(params->output);
 }
 
-void Solver::InitTestParticles()
-{
-    if (params->NUM_PRT > 0) for (int i = 0; i < params->NUM_PRT; i++)
-    {
-        prt[i].q = int(params->CHARGE_PRT);
-        prt[i].m = params->MASS_PRT;
-        for (int j = 0; j < 3; j++)
-        {
-            prt[i].r[j] = 0.;
-            prt[i].p[j] = 0.;
-        }
-        prt[i].p[1] = tan(params->THETA);
-        prt[i].r[2] = (params->start_point + params->interval*i)*params->mesh->dz;
-    }
-}
-
 void Solver::CreateDirs()
 {
     // creating main directory for output
@@ -181,7 +163,7 @@ void Solver::CreateDirs()
     }
 
     // creating directory for test particles
-    if (params->NUM_PRT > 0)
+    if (particles->particles_number > 0)
     {
         filesaving::create_dir(params->output_directory_name, "particles/");
     }
@@ -199,7 +181,7 @@ void Solver::SaveInput(std::string file)
     // storing information about input parameters
     FILE *input;
     input = filesaving::open_file("w+", params->output_directory_name, file.c_str());
-    fprintf(input, "\nVlasov-Maxwell code. Developed by Artem Korzhimanov and Arkady Gonoskov. mailto: kav@ufp.appl.sci-nnov.ru\n");
+    fprintf(input, "\nRelativistic Vlasov-Maxwell solver. Developed by Artem Korzhimanov. mailto: korzhimanov.artem@gmail.com\n");
 
     fprintf(input, "\nGENERAL PARAMETERS\n\n");
     fprintf(input, "\tSpace cells per wavelength = %d\n", params->mesh->ppw);
@@ -218,12 +200,12 @@ void Solver::SaveInput(std::string file)
     }
 
     fprintf(input, "\nTEST PARTICLES PARAMETERS\n\n");
-    fprintf(input, "\tNumber of particles = %d\n", params->NUM_PRT);
-    if (params->NUM_PRT > 0)
+    fprintf(input, "\tNumber of particles = %d\n", particles->particles_number);
+    if (particles->particles_number > 0)
     {
-        fprintf(input, "\tMass of particles = %f\n", params->MASS_PRT);
-        fprintf(input, "\tCharge of particles = %f\n", params->CHARGE_PRT);
-        fprintf(input, "\tParticles are equidistantly deposited from %f to %f Wavelenths\n", (float)params->start_point/params->mesh->ppw, (float)(params->start_point + params->interval*params->NUM_PRT)/params->mesh->ppw);
+        fprintf(input, "\tMass of particles = %f\n", particles->mass);
+        fprintf(input, "\tCharge of particles = %f\n", particles->charge);
+        fprintf(input, "\tParticles are equidistantly deposited from %f to %f Wavelenths\n", (float)particles->start_point/params->mesh->ppw, (float)(particles->start_point + particles->interval*particles->particles_number)/params->mesh->ppw);
     }
 
     fprintf(input, "\nOUTPUT PARAMETERS\n\n");
@@ -240,6 +222,9 @@ void Solver::SaveInput(std::string file)
     filesaving::close_file(input);
 }
 
+/**
+ * \todo Remove z
+ */
 void Solver::MoveParticles()
 {
     int z;
@@ -250,24 +235,24 @@ void Solver::MoveParticles()
     double *E = new double[3];
     double *B = new double[3];
     B[2] = 0;
-    for (i = 0; i < params->NUM_PRT; i++)
+    for (i = 0; i < particles->particles_number; i++)
     {
-        z = int(floor(prt[i].r[2]/params->mesh->dz));
+        z = int(floor(particles->prt[i].r[2]/params->mesh->dz));
         if (z < 0 || z >= params->mesh->MAX_Z) continue;
-        dz = prt[i].r[2]/params->mesh->dz - floor(prt[i].r[2]/params->mesh->dz);
+        dz = particles->prt[i].r[2]/params->mesh->dz - floor(particles->prt[i].r[2]/params->mesh->dz);
 
         E[0] = (1. - dz) * fdtd->ex[z] + dz * fdtd->ex[z+1];
         E[1] = (1. - dz) * fdtd->ey[z] + dz * fdtd->ey[z+1];
 
-        z = int(floor(prt[i].r[2]/params->mesh->dz - 0.5));
+        z = int(floor(particles->prt[i].r[2]/params->mesh->dz - 0.5));
         if (z < 0 || z >= params->mesh->MAX_Z-1) continue;
-        dz = prt[i].r[2]/params->mesh->dz - floor(prt[i].r[2]/params->mesh->dz);
+        dz = particles->prt[i].r[2]/params->mesh->dz - floor(particles->prt[i].r[2]/params->mesh->dz);
 
         E[2] = (1. - dz) * plasmas->ez[z] + dz * plasmas->ez[z+1];
         B[0] = (1. - dz) * fdtd->hx[z] + dz * fdtd->hx[z+1];
         B[1] = (1. - dz) * fdtd->hy[z] + dz * fdtd->hy[z+1];
 
-        prt[i].MakeStep(params->mesh->dt, E, B);
+        particles->prt[i].MakeStep(params->mesh->dt, E, B);
     }
 
     delete[] E;
@@ -374,10 +359,10 @@ void Solver::SaveDstrFunc(int k)
 
 void Solver::SavePrtDat(int k)
 {
-    if (params->NUM_PRT > 0)
+    if (particles->particles_number > 0)
     {
         std::ofstream *out_file;
-        for (int i = 0; i < params->NUM_PRT; i++)
+        for (int i = 0; i < particles->particles_number; i++)
         {
             char file_path[256];
             strcpy(file_path, params->output_directory_name.c_str());
@@ -385,7 +370,7 @@ void Solver::SavePrtDat(int k)
             sprintf(file_name, "particles/particle%06d.txt", i);
             strcat(file_path, file_name);
             out_file = new std::ofstream(file_path, std::ios_base::app);
-            *out_file << prt[i].r[0] << "\t" << prt[i].r[1] << "\t" << prt[i].r[2] << "\t" << prt[i].p[0] << "\t" << prt[i].p[1] << "\t" << prt[i].p[2] << std::endl;
+            *out_file << particles->prt[i].r[0] << "\t" << particles->prt[i].r[1] << "\t" << particles->prt[i].r[2] << "\t" << particles->prt[i].p[0] << "\t" << particles->prt[i].p[1] << "\t" << particles->prt[i].p[2] << std::endl;
             out_file->close();
             delete out_file;
         }

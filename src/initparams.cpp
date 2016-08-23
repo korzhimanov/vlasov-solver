@@ -34,20 +34,10 @@ int InitParams::Init(std::string dn)
     output_directory_name = dn + "/";
 
     int tpi;
-    double tpf;
 
     THETA = in->GetDouble("THETA");
     if (THETA < 0. && THETA >= 0.5*M_PI)
         std::cout << "Invalid incident angle! It should be between 0 and pi/2." << std::endl;
-
-    tpi = 0; if ( !in->SetNotNegative("NUM_PRT", &tpi) ) return  1600; NUM_PRT = tpi;
-    if (NUM_PRT > 0)
-    {
-        tpi =  0; if ( !in->SetNotNegative("start_point", &tpi) ) return  1610; start_point = tpi;
-        tpf    = 1.; if ( !in->SetPositive   ("interval", &tpf) ) return  1620; interval = tpf;
-        tpf    = 1.; if ( !in->SetPositive   ("MASS_PRT", &tpf) ) return  1630; MASS_PRT = tpf;
-        CHARGE_PRT = in->GetDouble("CHARGE_PRT");
-    }
 
     save_fields = in->GetInt("save_fields");
     save_concs  = in->GetInt("save_concs");

@@ -29,12 +29,6 @@ class InitParams
         // general
         Mesh *mesh;
         double THETA;
-        // particles
-        int NUM_PRT,
-            start_point;
-        double MASS_PRT,
-               CHARGE_PRT,
-               interval;
         // output
         std::string output_directory_name;
         FILE *output;

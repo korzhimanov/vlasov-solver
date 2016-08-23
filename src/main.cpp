@@ -104,7 +104,7 @@ int main(int argc, char **argv)
     Solver S(&init_params, &in, &mesh, &err);
 
     S.plasmas->InitDistribution();
-    S.InitTestParticles();
+    S.particles->InitParticles(&mesh);
 
     S.CreateDirs();
 
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 
         // Particles
         t1 = t2;
-        if (init_params.NUM_PRT > 0) S.MoveParticles();
+        if (S.particles->particles_number > 0) S.MoveParticles();
         t2 = get_time();
         std::cout << std::setw(10) << (t2-t1);
 

@@ -51,6 +51,8 @@ int FDTD::Init(pyinput* in)
 
     if ( !in->SetPositive("PML", &PML) ) return 310;
     if ( !in->SetPositive("PML_MAX_SIGMA", &MAX_SIGMA) ) return 320;
+
+    return 0;
 }
 
 void FDTD::AllocMemory()

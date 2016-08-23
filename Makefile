@@ -40,10 +40,13 @@ $(OBJ_DIR)/plasmas.o: $(OBJ_DIR)/mymath.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/mesh.o
 $(OBJ_DIR)/particle.o: $(INCLUDE_DIR)/particle.h $(SRC_DIR)/particle.cpp
 	$(CXX) $(CFLAGS) $(LFLAGS) -c $(SRC_DIR)/particle.cpp -o $(OBJ_DIR)/particle.o
 
-$(BIN_DIR)/$(OUT): $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/plasmas.o $(OBJ_DIR)/particle.o $(OBJ_DIR)/mesh.o $(INCLUDE_DIR)/solver.h $(SRC_DIR)/main.cpp
-	$(CXX) $(SRC_DIR)/main.cpp -o $(BIN_DIR)/$(OUT) $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/mesh.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/plasmas.o $(OBJ_DIR)/particle.o $(CFLAGS) $(LFLAGS) $(LIBS)
+$(OBJ_DIR)/testparticles.o: $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/particle.o $(INCLUDE_DIR)/testparticles.h $(SRC_DIR)/testparticles.cpp
+	$(CXX) $(CFLAGS) $(LFLAGS) -c $(SRC_DIR)/testparticles.cpp -o $(OBJ_DIR)/testparticles.o
 
-all: $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/mesh.o $(OBJ_DIR)/mesh.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/plasmas.o $(OBJ_DIR)/particle.o $(BIN_DIR)/$(OUT)
+$(BIN_DIR)/$(OUT): $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/plasmas.o $(OBJ_DIR)/particle.o $(OBJ_DIR)/testparticles.o $(OBJ_DIR)/mesh.o $(INCLUDE_DIR)/solver.h $(SRC_DIR)/main.cpp
+	$(CXX) $(SRC_DIR)/main.cpp -o $(BIN_DIR)/$(OUT) $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/mesh.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/plasmas.o $(OBJ_DIR)/particle.o $(OBJ_DIR)/testparticles.o $(CFLAGS) $(LFLAGS) $(LIBS)
+
+all: $(OBJ_DIR)/mymath.o $(OBJ_DIR)/file_saving.o $(OBJ_DIR)/pfunc.o $(OBJ_DIR)/pyinput.o $(OBJ_DIR)/mesh.o $(OBJ_DIR)/mesh.o $(OBJ_DIR)/initparams.o $(OBJ_DIR)/fdtd.o $(OBJ_DIR)/pfc.o $(OBJ_DIR)/plasmas.o $(OBJ_DIR)/particle.o $(OBJ_DIR)/testparticles.o $(BIN_DIR)/$(OUT)
 
 clean:
 	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/$(OUT)
