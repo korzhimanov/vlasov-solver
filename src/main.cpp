@@ -19,7 +19,7 @@
 #endif
 
 #include <cstdlib>
-#include <cstring>
+#include <string>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -47,8 +47,8 @@ void WrongArguments()
 
 int main(int argc, char **argv)
 {
-    char input_file_name[512];
-    sprintf(input_file_name, "init/default.py");
+    std::stringstream input_file_name;
+    input_file_name << "init/default.py";
 
     std::stringstream output_folder_name;
     time_t current_time = time(NULL);
@@ -66,7 +66,11 @@ int main(int argc, char **argv)
             if (!strcmp(argv[i], "-i"))
             {
                 if (argc > i+1)
-                    strcpy(input_file_name, argv[++i]);
+                {
+                    input_file_name.str( std::string() );
+                    input_file_name.clear();
+                    input_file_name << argv[++i];
+                }
                 else
                     WrongArguments();
                 std::cout << "Input file name has been setted to " << argv[i] << std::endl;
@@ -102,7 +106,7 @@ int main(int argc, char **argv)
 
     pyinput in;
     std::cout << "Reading input file " << input_file_name << " ... " << std::endl;
-    in.ReadFile(input_file_name);
+    in.ReadFile(input_file_name.str());
     std::cout << "done!" << std::endl;
 
     Mesh mesh(&in, &err);
