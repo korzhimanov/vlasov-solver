@@ -63,7 +63,7 @@ class Solver
         ~Solver();
 
 //------initialisation-------------------------------------------------
-        int InitVars(std::string, std::string);
+        int Init(pyinput*, int*);
         void AllocMemory();
         void CreateDirs();
         void SaveInput(std::string file);
@@ -115,7 +115,7 @@ class Solver
     private:
 };
 
-Solver::Solver(InitParams* p, pyinput* in, Mesh* m, int* err) : params(p), mech(m)
+Solver::Solver(InitParams* p, pyinput* in, Mesh* m, int* err) : params(p), mesh(m)
 {
     plasmas = new Plasmas(in, m, err);
     fdtd = new FDTD(in, m, err);
@@ -143,7 +143,7 @@ int Solver::Init(pyinput* in, int* err)
     THETA = in->GetDouble("THETA");
     if (THETA >= 0. && THETA < M_PI/2)
     {
-        halfn0dz = 0.5*sin(params->THETA)*plasmas->critical_concentration*mesh->dz
+        halfn0dz = 0.5*sin(params->THETA)*plasmas->critical_concentration*mesh->dz;
     }
     else return 10;
 
