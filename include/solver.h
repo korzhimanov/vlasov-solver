@@ -49,7 +49,10 @@ class Solver
         FDTD *fdtd; // FDTD - class
         TestParticles *particles;
 
+    private:
+        Mesh* mesh;
         // auxiliary variables
+        double halfn0dz;
         double em_flux; // flux density of electromagnetic field
         double electrostatic_energy, laser_energy, *plasma_energy, plasma_energy_0;
 
@@ -84,9 +87,6 @@ class Solver
 
         void MoveParticles();
 
-        /**
-         * \todo Change 0.5*sin(params->THETA)*pfc->N_0*params->mesh->dz to a single constant
-         */
         inline void FieldGeneration()
         {
             // field generation by plasma currents
@@ -94,10 +94,10 @@ class Solver
                 plasmas->pfc[sp].CalcCurrent(fdtd, plasmas->ax, plasmas->ay, plasmas->a2);
 
             // field generation by fixed ions (only in a boosted frame)
-            fdtd->ey[0] -= 0.5*sin(params->THETA)*plasmas->critical_concentration*params->mesh->dz*plasmas->fixed_ions_conc[0];
+            fdtd->ey[0] -= halfn0dz*plasmas->fixed_ions_conc[0];
             for (int i = 1; i < params->mesh->MAX_Z; i++)
-                fdtd->ey[i] -= 0.5*sin(params->THETA)*plasmas->critical_concentration*params->mesh->dz*(plasmas->fixed_ions_conc[i]+plasmas->fixed_ions_conc[i-1]);
-            fdtd->ey[params->mesh->MAX_Z] -= 0.5*sin(params->THETA)*plasmas->critical_concentration*params->mesh->dz*plasmas->fixed_ions_conc[params->mesh->MAX_Z-1];
+                fdtd->ey[i] -= halfn0dz*(plasmas->fixed_ions_conc[i]+plasmas->fixed_ions_conc[i-1]);
+            fdtd->ey[params->mesh->MAX_Z] -= halfn0dz*plasmas->fixed_ions_conc[params->mesh->MAX_Z-1];
         }
 
 //------saving data----------------------------------------------------
@@ -112,11 +112,12 @@ class Solver
     private:
 };
 
-Solver::Solver(InitParams* p, pyinput* in, Mesh* m, int* err) : params(p)
+Solver::Solver(InitParams* p, pyinput* in, Mesh* m, int* err) : params(p), mech(m)
 {
     plasmas = new Plasmas(in, m, err);
     fdtd = new FDTD(in, m, err);
     particles = new TestParticles(in, err);
+    Init(in, err);
     AllocMemory();
 }
 
@@ -133,9 +134,16 @@ Solver::~Solver()
     delete[] plasma_energy;
 }
 
-int Solver::InitVars(std::string file_name, std::string directory_name)
+int Solver::Init(pyinput* in, int* err)
 {
-    // moved to InitParams::Init()
+    double THETA = 0.;
+    THETA = in->GetDouble("THETA");
+    if (THETA >= 0. && THETA < M_PI/2)
+    {
+        halfn0dz = 0.5*sin(params->THETA)*plasmas->critical_concentration*mesh->dz
+    }
+    else return 10;
+
     return 0;
 }
 
