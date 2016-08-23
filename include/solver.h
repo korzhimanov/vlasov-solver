@@ -94,10 +94,13 @@ class Solver
                 plasmas->pfc[sp].CalcCurrent(fdtd, plasmas->ax, plasmas->ay, plasmas->a2);
 
             // field generation by fixed ions (only in a boosted frame)
-            fdtd->ey[0] -= halfn0dz*plasmas->fixed_ions_conc[0];
-            for (int i = 1; i < params->mesh->MAX_Z; i++)
-                fdtd->ey[i] -= halfn0dz*(plasmas->fixed_ions_conc[i]+plasmas->fixed_ions_conc[i-1]);
-            fdtd->ey[params->mesh->MAX_Z] -= halfn0dz*plasmas->fixed_ions_conc[params->mesh->MAX_Z-1];
+            if (halfn0dz > 0.)
+            {
+                fdtd->ey[0] -= halfn0dz*plasmas->fixed_ions_conc[0];
+                for (int i = 1; i < params->mesh->MAX_Z; i++)
+                    fdtd->ey[i] -= halfn0dz*(plasmas->fixed_ions_conc[i]+plasmas->fixed_ions_conc[i-1]);
+                fdtd->ey[params->mesh->MAX_Z] -= halfn0dz*plasmas->fixed_ions_conc[params->mesh->MAX_Z-1];
+            }
         }
 
 //------saving data----------------------------------------------------
