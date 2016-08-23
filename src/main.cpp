@@ -21,10 +21,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include <ctime>
+#include "mesh.h"
 #include "pyinput.h"
 #include "solver.h"
+#include "output.h"
 
 double invcps = 1./(double)CLOCKS_PER_SEC;
 double get_time()
@@ -47,10 +50,13 @@ int main(int argc, char **argv)
     char input_file_name[512];
     sprintf(input_file_name, "input.py");
 
-    char output_folder_name[512];
+    std::stringstream output_folder_name;
     time_t current_time = time(NULL);
     struct tm * utc_time = gmtime(&current_time);
-    snprintf(output_folder_name, 512, "%d-%02d-%dUTC%02d:%02d:%02d", utc_time->tm_year+1900, utc_time->tm_mon+1, utc_time->tm_mday, utc_time->tm_hour, utc_time->tm_min, utc_time->tm_sec);
+
+    output_folder_name << utc_time->tm_year+1900;
+    output_folder_name << std::setfill('0') << std::setw(2);
+    output_folder_name << utc_time->tm_mon+1 << utc_time->tm_mday << "UTC" << utc_time->tm_hour << utc_time->tm_min << utc_time->tm_sec;
 
     if (argc > 1)
     {
@@ -69,7 +75,11 @@ int main(int argc, char **argv)
             if (!strcmp(argv[i], "-o"))
             {
                 if (argc > i+1)
-                    strcpy(output_folder_name, argv[++i]);
+                {
+                    output_folder_name.str( std::string() );
+                    output_folder_name.clear();
+                    output_folder_name << argv[++i];
+                }
                 else
                     WrongArguments();
                 std::cout << "Output folder name has been setted to " << argv[i] << std::endl;
@@ -98,21 +108,17 @@ int main(int argc, char **argv)
     Mesh mesh(&in, &err);
     if (err != 0) {std::cout << "Initialization failed! Returning code is " << err << std::endl; return err;}
 
-    InitParams init_params(&in, output_folder_name, &mesh, &err);
+    Solver S(&in, &mesh, &err);
     if (err != 0) {std::cout << "Initialization failed! Returning code is " << err << std::endl; return err;}
 
-    Solver S(&init_params, &in, &mesh, &err);
+    Output output(&in, output_folder_name.str(), &S, &err);
+    if (err != 0) {std::cout << "Initialization failed! Returning code is " << err << std::endl; return err;}
 
     S.plasmas->InitDistribution();
     S.particles->InitParticles(&mesh);
 
-    S.CreateDirs();
-
-    S.InitOutput("output");
-    S.SaveInput("input_parameters");
-
     double t0 = get_time();
-    std::cout << std::setw(10) << "LongField" << std::setw(11) << "TransField" << std::setw(10) << "FieldGen" << std::setw(10) << "DstrFunc" << std::setw(10) << "Particles" << std::setw(10) << "SvFields" << std::setw(10) << "SvConcs" << std::setw(10) << "SvDstr" << std::setw(10) << "SvOutput" << std::setw(10) << "Step" << std::setw(20) << "Passed/ Estimated" << std::endl;
+    std::cout << std::setw(10) << "LongField" << std::setw(11) << "TransField" << std::setw(10) << "FieldGen" << std::setw(10) << "DstrFunc" << std::setw(10) << "Particles" << std::setw(10) << "SvFields" << std::setw(10) << "SvConcs" << std::setw(10) << "SvDstr" << std::setw(10) << "SvPrtData" << std::setw(10) << "Energy" << std::setw(10) << "Step" << std::setw(20) << "Passed/ Estimated" << std::endl;
 
     double t1, t2, t;
     std::cout << std::fixed << std::setprecision(4);
@@ -151,25 +157,31 @@ int main(int argc, char **argv)
 
         // SvFields
         t1 = t2;
-        S.SaveFields( k );
+        output.SaveFields( k );
         t2 = get_time();
         std::cout << std::setw(10) << (t2-t1);
 
         // SvConcs
         t1 = t2;
-        S.SaveConcs( k );
+        output.SaveConcs( k );
         t2 = get_time();
         std::cout << std::setw(10) << (t2-t1);
 
         // SvDstr
         t1 = t2;
-        S.SaveDstrFunc( k );
+        output.SaveDstrFunc( k );
+        t2 = get_time();
+        std::cout << std::setw(10) << (t2-t1);
+
+        // SvPrtData
+        t1 = t2;
+        output.SavePrtData( k );
         t2 = get_time();
         std::cout << std::setw(10) << (t2-t1);
 
         // Output
         t1 = t2;
-        //S.SaveOutput( k, "output");
+        output.WriteEnergy( k );
         t2 = get_time();
         std::cout << std::setw(10) << (t2-t1);
         std::cout << std::setw(10) << (t2-t );
@@ -177,8 +189,6 @@ int main(int argc, char **argv)
         std::cout << std::setw(9) << (t2-t0) << "/ " << (t2-t0)/(k+1)*(mesh.MAX_T) << std::endl;
         std::cout << std::setprecision(4);
     }
-
-    //S.SaveResults();
 
     std::cout << "Done!" << std::endl;
     t = get_time();

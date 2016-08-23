@@ -45,7 +45,7 @@ class Plasmas
 };
 
 /**
- * \todo Change 0.5*critical_concentration*params->mesh->dz to a single constant
+ * \todo Change 0.5*critical_concentration*mesh->dz to a single constant
  */
 inline void Plasmas::CalcLongFields()
 {
