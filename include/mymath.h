@@ -17,7 +17,6 @@
 
 #include <cstring>
 #include <cmath>
-#include <gsl/gsl_math.h>
 
 namespace mymath {
 

@@ -1,7 +1,7 @@
 PYTHONVERSION = 2.7
 CXX = g++
 CFLAGS = -Wall -g -O0 -fopenmp -I./include -I/usr/include/python$(PYTHONVERSION)
-LIBS = -lz -lgsl -lgslcblas -lpython$(PYTHONVERSION)
+LIBS = -lz -lpython$(PYTHONVERSION)
 INCLUDE_DIR = include
 SRC_DIR = src
 OBJ_DIR = obj

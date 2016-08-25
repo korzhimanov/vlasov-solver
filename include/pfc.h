@@ -29,8 +29,6 @@
 #include "fdtd.h"
 #include "mymath.h"
 #include "file_saving.h"
-#include <gsl/gsl_const_mksa.h>
-#include <gsl/gsl_sf_synchrotron.h>
 
 /**
  * /class PFC
@@ -74,9 +72,6 @@ public:
     void SaveDstrFunctionTxt(std::string filename);
     void SaveDstrFunctionBin(std::string filename);
     void SaveDstrFunctionGZip(std::string filename);
-    void SaveEmitRadiationTxt(std::string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
-    void SaveEmitRadiationBin(std::string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
-    void SaveEmitRadiationGZip(std::string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
     // calculates kinetic energy of particles
     double KineticEnergy(double* ax, double *ay);
     double KineticEnergy(double* ax, double *ay, int left_bound, int right_bound);
@@ -84,7 +79,6 @@ public:
 private:
 //------miscellaneous--------------------------------------------------
     void CalcConcDstr();
-    double CalcEmitRadiation(double freq, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
 
 private:
     double *f1,
@@ -105,7 +99,7 @@ private:
     double vdt_dz; // projections of velocity in phase space
     double fold, flux_part;
     int new_cell;
-    double n0dp, q_m, q2_m2, halfq_m, halfqdz, quart_q2n0dtdp_m, qdt_mdp, q2dt_dzdp, twicepisqrt3q2n0dpdzr_l, *p, *p2;
+    double n0dp, q_m, q2_m2, halfq_m, halfqdz, quart_q2n0dtdp_m, qdt_mdp, q2dt_dzdp, *p, *p2;
     pFunc *profile; // concentration profile function
 };
 #endif // PFC_H

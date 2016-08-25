@@ -73,7 +73,6 @@ int PFC::Init(int particle_type, pyinput *in, Mesh *m, double *n0, double *p0)
     quart_q2n0dtdp_m = .25 * CHARGE * CHARGE * N0 * mesh->dt * dp / MASS;
     qdt_mdp = CHARGE * mesh->dt / (MASS * dp);
     q2dt_dzdp = CHARGE * CHARGE * mesh->dt / (mesh->dz * dp);
-    twicepisqrt3q2n0dpdzr_l = M_SQRT3 * CHARGE * CHARGE * N0 * dp * mesh->dz * M_PI * GSL_CONST_MKSA_ELECTRON_CHARGE * GSL_CONST_MKSA_ELECTRON_CHARGE / (GSL_CONST_MKSA_MASS_ELECTRON * GSL_CONST_MKSA_SPEED_OF_LIGHT * GSL_CONST_MKSA_SPEED_OF_LIGHT);
 
     return 0;
 }
@@ -426,38 +425,6 @@ void PFC::SaveDstrFunctionGZip(std::string filename)
     gzclose(out);
 }
 
-void PFC::SaveEmitRadiationTxt(std::string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2)
-{
-    double *I = new double[max_harmonic/dn+1];
-    I[0] = 0.;
-
-    for (int n = dn; n <= max_harmonic; n+=dn)
-    {
-        I[n/dn] = CalcEmitRadiation(double(n), fdtd, ez, ax, ay, a2)*dt;
-    }
-
-    filesaving::save_file_1D_txt(I, max_harmonic/dn+1, filename+".txt");
-
-    delete[] I;
-}
-
-void PFC::SaveEmitRadiationBin(std::string filename, int max_harmonic, int dn, double dt, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2)
-{
-    double *I = new double[max_harmonic/dn+1];
-    I[0] = 0.;
-
-    for (int n = dn; n <= max_harmonic; n+=dn)
-    {
-        I[n/dn] = CalcEmitRadiation(double(n), fdtd, ez, ax, ay, a2)*dt;
-    }
-
-    std::ofstream out((filename+".bin").c_str(), std::ios_base::binary);
-    out.write((char*)I, (max_harmonic/dn+1)*sizeof(double));
-    out.close();
-
-    delete[] I;
-}
-
 void PFC::CalcConcDstr()
 {
     memset(conc, 0, sizeof(double)*mesh->MAX_Z);
@@ -472,68 +439,4 @@ void PFC::CalcConcDstr()
             conc[i] += *(f1+ii+j);
         conc[i] *= n0dp;
     }
-}
-
-double PFC::CalcEmitRadiation(double freq, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2)
-{
-    double ae[3]; // acceleration by electric field
-    double ab[3]; // acceleration by magnetic field
-    double an[3]; // normal acceleration
-    double v[3]; // velocity
-
-    double gamma; // gamma-factor
-    double gamma2; // gamma-factor squared
-    double inv_gamma; // inverse gamma-factor
-    double av; // scalar product of acceleration and velocity
-    double gamma2_curv_rad; // gamma squared divided by curvature radius
-    double cut_freq; // cutoff frequency
-    double dI_dt = 0.; // power of radiation per unit of frequency
-    for (int i = 0; i < mesh->MAX_Z; i++)
-    {
-        ae[0] = -halfq_m * (fdtd->ex[i]+fdtd->ex[i+1]);
-        ae[1] = -halfq_m * (fdtd->ey[i]+fdtd->ey[i+1]);
-        ae[2] = -halfq_m * (ez[i]+ez[i+1]);
-
-        int ii = i*MAX_P;
-        double a2_1 = 1. + a2[i]*q2_m2;
-        double px = halfq_m * (ax[i] + ax[i+1]);
-        double py = halfq_m * (ay[i] + ay[i+1]);
-        for (int j = 0; j < MAX_P; j++)
-        {
-            if (*(f1+ii+j) > 0.)
-            {
-                gamma2 = a2_1 + p2[j];
-                if (gamma2 > 2.)
-                {
-                    gamma = sqrt(gamma2);
-                    inv_gamma = 1./gamma;
-
-                    v[0] = px   * inv_gamma;
-                    v[1] = py   * inv_gamma;
-                    v[2] = p[j] * inv_gamma;
-
-                    ab[0] =  q_m *  v[2] * fdtd->hy[i];
-                    ab[1] = -q_m *  v[2] * fdtd->hx[i];
-                    ab[2] = -q_m * (v[0] * fdtd->hy[i] - v[1] * fdtd->hx[i]);
-
-                    av = ae[0]*v[0] + ae[1]*v[1] + ae[2]*v[2];
-
-                    an[0] = inv_gamma * (ae[0] + ab[0] - av*v[0]);
-                    an[1] = inv_gamma * (ae[1] + ab[1] - av*v[1]);
-                    an[2] = inv_gamma * (ae[2] + ab[2] - av*v[2]);
-
-                    gamma2_curv_rad = sqrt(an[0]*an[0]+an[1]*an[1]+an[2]*an[2])*gamma2*gamma2/(gamma2-1.);
-
-                    cut_freq = 3.*gamma*gamma2_curv_rad;
-
-                    if (cut_freq*mesh->dt > gamma2 && freq < 10.*cut_freq)
-                    {
-                        dI_dt += gamma2_curv_rad * gsl_sf_synchrotron_1(2.*freq/cut_freq) * *(f1+ii+j);
-                    }
-                }
-            }
-        }
-    }
-
-    return twicepisqrt3q2n0dpdzr_l*dI_dt;
 }
