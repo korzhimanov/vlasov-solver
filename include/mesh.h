@@ -32,7 +32,7 @@ public:
            dt_dz;
 public:
     Mesh();
-    Mesh(pyinput*, int *);
+    Mesh(pyinput*, int*);
     int Init(pyinput*);
 };
 

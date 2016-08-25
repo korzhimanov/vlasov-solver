@@ -60,9 +60,8 @@ public:
 
 private:
     // determines destination cell and parts of flux between it and nighbouring one
-    void Destination(int old_cell, int &new_cell, int max_cell, double &flux_part);
-    double SlopeCorrectorLeft(double centralvalue, double leftvalue);
-    double SlopeCorrectorRight(double centralvalue, double rightvalue);
+    double CorrectedLeftSlope (double *centralvalue, double *leftvalue);
+    double CorrectedRightSlope(double *centralvalue, double *rightvalue);
 
 //------informative functions------------------------------------------
 public:
@@ -84,12 +83,13 @@ public:
 
 private:
 //------miscellaneous--------------------------------------------------
-    void CalcConcDstr(float* n);
+    void CalcConcDstr();
     double CalcEmitRadiation(double freq, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
 
 private:
     double *f1,
-           *f2;
+           *f2,
+           *conc;
     Mesh *mesh;
     double N0, // critical concentration in a boosted frame (useful for simulation of oblique irradiation)
            P0; // initial mean momentum along y-axis (useful for simulation of oblique irradiation in boosted frame)
@@ -103,93 +103,9 @@ private:
         dp; // mesh step in momentum space
     double maxf; // maximal value of the distribution function
     double vdt_dz; // projections of velocity in phase space
-    const double onesixth; // just a constant equal to 1/6
-    double res, tmp, fold;
+    double fold, flux_part;
     int new_cell;
-    double flux_part;
-    double q_m, q2_m2, halfq_m, half_qn0dz, quart_q2n0dtdp_m, qdt_mdp, q2dt_dzdp, twicepisqrt3q2n0dpdzr_l, *p, *p2;
+    double n0dp, q_m, q2_m2, halfq_m, halfqdz, quart_q2n0dtdp_m, qdt_mdp, q2dt_dzdp, twicepisqrt3q2n0dpdzr_l, *p, *p2;
     pFunc *profile; // concentration profile function
 };
-
-inline void PFC::Destination(int old_cell, int &new_cell, int max_cell, double &flux_part)
-{
-    new_cell = old_cell;
-    flux_part = 0.;
-
-    if (vdt_dz > 0.)
-    {
-        new_cell = old_cell - 1 + (int)ceil(vdt_dz);
-        flux_part = vdt_dz - floor(vdt_dz);
-        if (new_cell >= max_cell - 1)
-        {
-            new_cell = max_cell - 1;
-            flux_part = 0.;
-        }
-    }
-    else
-    {
-        new_cell = old_cell + (int)ceil(vdt_dz);
-        flux_part = vdt_dz - ceil(vdt_dz);
-        if (new_cell <= 0)
-        {
-            new_cell = 0;
-            flux_part = 0.;
-        }
-    }
-}
-
-// slope corrector for right boundary
-inline double PFC::SlopeCorrectorRight(double centralvalue, double rightvalue)
-{
-    double res, tmp;
-    if (fabs(rightvalue - centralvalue) < 1e-14)
-        res = 0.;
-    else
-    {
-        tmp = 1./(rightvalue - centralvalue);
-        if (tmp > 0.)
-        {
-            if (2.*(centralvalue)*tmp < 1.)
-                res = 2.*(centralvalue)*tmp;
-            else
-                res = 1.;
-        }
-        else
-        {
-            if (-2.*(maxf-centralvalue)*tmp < 1.)
-                res = -2.*(maxf-centralvalue)*tmp;
-            else
-                res = 1.;
-        }
-    }
-    return res;
-}
-
-// slope corrector for left boundary
-inline double PFC::SlopeCorrectorLeft(double centralvalue, double leftvalue)
-{
-    double res, tmp;
-    if (fabs(centralvalue - leftvalue) < 1e-14)
-        res = 0.;
-    else
-    {
-        tmp = 1./(centralvalue - leftvalue);
-        if (tmp < 0.)
-        {
-            if (-2.*(centralvalue)*tmp < 1.)
-                res = -2.*(centralvalue)*tmp;
-            else
-                res = 1.;
-        }
-        else
-        {
-            if (2.*(maxf-centralvalue)*tmp < 1.)
-                res = 2.*(maxf-centralvalue)*tmp;
-            else
-                res = 1.;
-        }
-    }
-    return res;
-}
-
 #endif // PFC_H

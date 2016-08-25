@@ -46,7 +46,6 @@ Output::Output(pyinput* in, std::string dn, Solver* s, int* err) : save_fields(1
 
 Output::~Output()
 {
-//    if (plasma_energy) delete[] plasma_energy;
     if (energy_file) energy_file.close();
 }
 

@@ -30,6 +30,8 @@ template<typename Type> Type max(Type *a, const int number, const int step = 1);
 template<typename Type> Type min(Type *a, const int number, const int step = 1);
 template<typename Type> Type sqr(Type x);
 
+double const onesixth = 1./6.;
+
 } // namespace mymath
 
 inline void mymath::zeros(double *a, const int number)
