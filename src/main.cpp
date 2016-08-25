@@ -105,7 +105,7 @@ int main(int argc, char **argv)
     int err = 0;
 
     pyinput in;
-    std::cout << "Reading input file " << input_file_name << " ... " << std::endl;
+    std::cout << "Reading input file " << input_file_name.str() << " ... " << std::endl;
     in.ReadFile(input_file_name.str());
     std::cout << "done!" << std::endl;
 

@@ -19,6 +19,7 @@
 #define OUTPUT_H
 
 #include <string>
+#include <fstream>
 #include "pyinput.h"
 #include "solver.h"
 
@@ -37,7 +38,7 @@ class Output
                     save_fields_format,
                     save_concs_format,
                     save_dstr_format;
-        FILE *energy_file;
+        std::ofstream energy_file;
 
     private:
         Solver* solver;

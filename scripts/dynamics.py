@@ -17,7 +17,7 @@ fd = gzip.open('{0}/conc0.gz'.format(prefix), 'rb')
 a = np.frombuffer(fd.read(), dtype=np.float32)
 b = np.reshape(a, (-1, data_size))
 
-ax = fig.add_subplot(211)
+ax = fig.add_subplot(221)
 cax = ax.matshow(b, aspect='auto')
 fig.colorbar(cax)
 
@@ -25,7 +25,23 @@ fd = gzip.open('{0}/conc1.gz'.format(prefix), 'rb')
 a = np.frombuffer(fd.read(), dtype=np.float32)
 b = np.reshape(a, (-1, data_size))
 
-ax = fig.add_subplot(212)
+ax = fig.add_subplot(222)
+cax = ax.matshow(b, aspect='auto')
+fig.colorbar(cax)
+
+fd = gzip.open('{0}/ex.gz'.format(prefix), 'rb')
+a = np.frombuffer(fd.read(), dtype=np.double)
+b = np.reshape(a, (-1, data_size))
+
+ax = fig.add_subplot(223)
+cax = ax.matshow(b, aspect='auto')
+fig.colorbar(cax)
+
+fd = gzip.open('{0}/ey.gz'.format(prefix), 'rb')
+a = np.frombuffer(fd.read(), dtype=np.double)
+b = np.reshape(a, (-1, data_size))
+
+ax = fig.add_subplot(224)
 cax = ax.matshow(b, aspect='auto')
 fig.colorbar(cax)
 
@@ -73,14 +89,6 @@ b_log = np.log(b1)
 ax = fig.add_subplot(326)
 ax.set_xlim(0, energy_lim/3000.*energy_data_size*197./69.)
 cax = ax.matshow(b_log, aspect='auto', vmin=0, vmax=5)
-fig.colorbar(cax)
-
-fd = gzip.open('data/0_0_0/output/ez.gz', 'rb')
-a = np.frombuffer(fd.read(), dtype=np.double)
-b = np.reshape(a, (-1, data_size))
-
-ax = fig.add_subplot(122)
-cax = ax.matshow(b, aspect='auto')
 fig.colorbar(cax)
 '''
 

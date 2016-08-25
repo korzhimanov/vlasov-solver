@@ -46,7 +46,7 @@ Output::Output(pyinput* in, std::string dn, Solver* s, int* err) : save_fields(1
 Output::~Output()
 {
     if (plasma_energy) delete[] plasma_energy;
-    if (energy_file) fclose(energy_file);
+    if (energy_file) energy_file.close();
 }
 
 int Output::Init(pyinput* in, std::string *dn)
@@ -187,8 +187,6 @@ void Output::SaveInput(std::string fn)
 
 void Output::SaveFields(int k)
 {
-    em_flux += solver->fdtd->FluxIn();
-
     if (save_fields == true && k%save_fields_dt == 0)
     {
         if (save_fields_format == "txt")
@@ -288,17 +286,20 @@ void Output::InitEnergyFile(std::string fn)
 {
     em_flux = 0.;
     plasma_energy = new double[solver->plasmas->species_number];
-    energy_file = fopen((output_directory_name + fn).c_str(), "w+");
-    fprintf(energy_file, " Step |   Neutrality   |");
+    energy_file.open((output_directory_name + fn).c_str(), std::ios_base::app);
+    energy_file << std::right << std::scientific << std::setprecision(4);
+    energy_file << std::setw(8) << "Step";
+    energy_file << std::setw(16) << "Neutrality";
     for (int sp = 0; sp < solver->plasmas->species_number; sp++)
-        fprintf(energy_file, "       W_%d       |", sp);
-    fprintf(energy_file, "     W_el-st    |     W_laser    |     EM Flux    |     W_total    |     Balance    |\n");
-    fflush(energy_file);
+        energy_file << std::setw(9) << sp << " specie";
+    energy_file << std::setw(16) << "Electrostatic" << std::setw(16) << "Laser" << std::setw(16) << "EM Flux" << std::setw(16) << "Total" << std::setw(16) << "Balance" << std::endl;
 }
 
 void Output::WriteEnergy(int k)
 {
-    if (k%solver->mesh->ppw == 0)
+    em_flux += solver->fdtd->FluxIn();
+
+    if (k%(solver->mesh->ppw) == 0)
     {
         for (int sp = 0; sp < solver->plasmas->species_number; sp++)
             plasma_energy[sp] = solver->plasmas->pfc[sp].KineticEnergy(solver->plasmas->ax, solver->plasmas->ay);
@@ -312,12 +313,12 @@ void Output::WriteEnergy(int k)
             electrostatic_energy += solver->plasmas->ez[i]*solver->plasmas->ez[i];
         electrostatic_energy *= 0.5*solver->mesh->dz;
 
-        fprintf(energy_file, "%06d|%16.8e|", k, solver->plasmas->ez[solver->mesh->MAX_Z-1]);
+        energy_file << std::setw(8) << k;
+        energy_file << std::setw(16) << solver->plasmas->ez[solver->mesh->MAX_Z-1];
         for (int sp = 0; sp < solver->plasmas->species_number; sp++)
-            fprintf(energy_file, " %16.8e|", plasma_energy[sp]);
+            energy_file << std::setw(16) << plasma_energy[sp];
 
         total_energy = mymath::sum(plasma_energy, solver->plasmas->species_number)+electrostatic_energy+laser_energy;
-        fprintf(energy_file, "%16.8e|%16.8e|%16.8e|%16.8e|%16.8e|\n", electrostatic_energy, laser_energy, em_flux, total_energy, total_energy-em_flux-plasma_energy_0);
-        fflush(energy_file);
+        energy_file << std::setw(16) << electrostatic_energy << std::setw(16) << laser_energy << std::setw(16) << em_flux << std::setw(16) << total_energy << std::setw(16) << total_energy-em_flux-plasma_energy_0 << std::endl;
     }
 }

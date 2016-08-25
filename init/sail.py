@@ -21,7 +21,7 @@ MAX_T = 10*ppw+1 # number of the steps for time
 dt = 2*PI/ppw # step size for time
 dz = 2*PI/ppw # step size for coordinate
 THETA = 0 #PI/4 # incident angle for laser pulse
-PML = 512 # number of cells devoted to PML
+PML = ppw # number of cells devoted to PML
 PML_MAX_SIGMA = 100. # miximal absorption coefficient in the PML
 
 ## PLASMA PARAMETERS
@@ -70,10 +70,9 @@ t_delay = t_length # delay before pulse appearing
 source = 10 # the position of a source of an electromagnetic wave in respect to the PML-layer
 
 def PULSE_X(t):
-	#return A*Block(t, t_delay, t_delay + t_length)*sin(t - t_delay) # a slope of the laser pulse
-	return 50*exp(-sqr((t-t_delay)/t_length*2))*cos(t) # a slope of a laser pulse
+	return 50*exp(-sqr((t-t_delay)/t_length*2))*cos(t) # Ex component of a laser pulse
 def PULSE_Y(t):
-	return 50*exp(-sqr((t-t_delay)/t_length*2))*sin(t) # a slope of a laser pulse
+	return 50*exp(-sqr((t-t_delay)/t_length*2))*sin(t) # Ey component of a laser pulse
 
 ## TEST PARTICLE PARAMETERS
 

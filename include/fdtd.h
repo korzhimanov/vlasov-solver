@@ -74,19 +74,19 @@ class FDTD
         // calculates flux incoming into box through boundaries
         inline double FluxIn()
         {
-            return Flux(2*PML + 2) - Flux(mesh->MAX_Z - PML - 3);
+            return Flux(PML + SOURCE + 2) - Flux(mesh->MAX_Z - PML - 3);
         }
         // calculates flux outcoming out of box through boundaries
         inline double FluxOut()
         {
-            return - Flux(2*PML + 2) + Flux(mesh->MAX_Z - PML - 3);
+            return - FluxIn();
         }
         // calculates full electromagnetic energy between 'l_cell' and 'r_cell'
         // by default calculates energy consisted in the region between PML regions
         inline double Energy(int l_cell, int r_cell)
         {
             double tmp = 0.;
-            for (int i = l_cell; i <= r_cell; i++)
+            for (int i = l_cell; i < r_cell; i++)
                 tmp += hx[i]*hx[i] + hy[i]*hy[i] + ex[i]*ex[i] + ey[i]*ey[i];
             tmp += 0.5 * (ex[r_cell]*ex[r_cell] + ey[r_cell]*ey[r_cell] - ex[l_cell]*ex[l_cell] - ey[l_cell]*ey[l_cell]);
             tmp *= 0.5 * mesh->dz;
@@ -94,7 +94,7 @@ class FDTD
         }
         inline double Energy()
         {
-            return Energy(2*PML+2, mesh->MAX_Z-PML-3);
+            return Energy(PML + SOURCE + 2, mesh->MAX_Z - PML - 3);
         }
 
     private:
