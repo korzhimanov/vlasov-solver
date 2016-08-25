@@ -362,7 +362,7 @@ void PFC::SaveConcentrationTxt(std::string filename)
 
     CalcConcDstr(n);
 
-    filesaving::save_file_1D(n, mesh->MAX_Z, "", (filename+".txt").c_str());
+    filesaving::save_file_1D_txt(n, mesh->MAX_Z, filename+".txt");
 
     delete[] n;
 }
@@ -395,7 +395,7 @@ void PFC::SaveConcentrationGZip(std::string filename)
 
 void PFC::SaveDstrFunctionTxt(std::string filename)
 {
-    filesaving::save_file_2D_transpose(f1, MAX_P, mesh->MAX_Z, "", (filename+".txt").c_str());
+    filesaving::save_file_2D_txt(f1, MAX_P, mesh->MAX_Z, filename+".txt", true);
 }
 
 void PFC::SaveDstrFunctionBin(std::string filename)
@@ -422,7 +422,7 @@ void PFC::SaveEmitRadiationTxt(std::string filename, int max_harmonic, int dn, d
         I[n/dn] = CalcEmitRadiation(double(n), fdtd, ez, ax, ay, a2)*dt;
     }
 
-    filesaving::save_file_1D(I, max_harmonic/dn+1, "", (filename+".txt").c_str());
+    filesaving::save_file_1D_txt(I, max_harmonic/dn+1, filename+".txt");
 
     delete[] I;
 }

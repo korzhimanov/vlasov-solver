@@ -24,61 +24,89 @@
 #include <zlib.h>
 #include <sys/stat.h>
 
+static std::ofstream fs;
+static gzFile gz;
+
 namespace filesaving
 {
-
-FILE *open_file(const char *mode, std::string main_dir, const char *name, ...);
-void close_file(FILE *file);
-
 void create_dir(std::string);
 
-void save_file_1D(float *a, const int num, std::string main_dir, const char *name, ...);
-void save_file_1D(float *a, const int num, const int step, std::string main_dir, const char *name, ...);
-void save_file_1D(double *a, const int num, std::string main_dir, const char *name, ...);
-void save_file_1D(double *a, const int num, const int step, std::string main_dir, const char *name, ...);
-void save_file_1D(int *a, const int num, std::string main_dir, const char *name, ...);
-void save_file_1D(int *a, const int num, const int step, std::string main_dir, const char *name, ...);
+template<typename Type> void save_file_1D_txt(Type *a, const int num, const std::string name);
+template<typename Type> void save_file_1D_txt(Type *a, const int num, const int step, const std::string name);
+template<typename Type> void save_file_1D_bin(Type *a, const int num, const std::string name);
+template<typename Type> void save_file_1D_gzip(Type *a, const int num, const std::string name);
 
-template<typename Type> void save_file_1D_bin(Type *a, const int num, std::string main_dir, const char *name, ...);
-template<typename Type> void save_file_1D_gzip(Type *a, const int num, std::string main_dir, const char *name, ...);
-
-void save_file_2D(double *a, int columns, int strings, std::string main_dir, const char *name, ...);
-void save_file_2D_transpose(double *a, int columns, int strings, std::string main_dir, const char *name, ...);
-
+template<typename Type> void save_file_2D_txt(Type *a, const int columns, const int rows, const std::string name, const bool need_transpose = false);
 } // namespace filesaving
 
 template<typename Type>
-void filesaving::save_file_1D_bin(Type *a, const int num, std::string main_dir, const char *name, ...)
+void filesaving::save_file_1D_txt(Type *a, const int num, const std::string name)
 {
-    char temp[512];
-    strcpy(temp, main_dir.c_str());
-    va_list var; va_start(var, name);
-    char name1[512];
-    vsprintf(name1, name, var);
-    strcat(temp, name1);
+    fs.open(name.c_str(), std::ios_base::app|std::ios_base::out);
 
-    std::ofstream out(temp, std::ios_base::binary|std::ios_base::app|std::ios_base::out);
-    out.write((char*)a, num*sizeof(Type));
-    out.close();
+    int count;
+    Type *b = a;
+    for (count = 0; count < num; count++)
+        fs << *(b++) << "\t";
+    fs << std::endl;
 
-    va_end(var);
+    fs.close();
 }
 
 template<typename Type>
-void filesaving::save_file_1D_gzip(Type *a, const int num, std::string main_dir, const char *name, ...)
+void filesaving::save_file_1D_txt(Type *a, const int num, const int step, const std::string name)
 {
-    char temp[512];
-    strcpy(temp, main_dir.c_str());
-    va_list var; va_start(var, name);
-    char name1[512];
-    vsprintf(name1, name, var);
-    strcat(temp, name1);
+    fs.open(name.c_str(), std::ios_base::app|std::ios_base::out);
 
-    gzFile out = gzopen(temp, "ab");
-    gzwrite(out, (char*)a, num*sizeof(Type));
-    gzclose(out);
+    int count;
+    for (count = 0; count < num*step; count += step)
+        fs << *(a+count) << "\t";
+    fs << std::endl;
 
-    va_end(var);
+    fs.close();
 }
+
+template<typename Type>
+void filesaving::save_file_1D_bin(Type *a, const int num, const std::string name)
+{
+    fs.open(name.c_str(), std::ios_base::binary|std::ios_base::app|std::ios_base::out);
+    fs.write((char*)a, num*sizeof(Type));
+    fs.close();
+}
+
+template<typename Type>
+void filesaving::save_file_1D_gzip(Type *a, const int num, const std::string name)
+{
+    gz = gzopen(name.c_str(), "ab");
+    gzwrite(gz, (char*)a, num*sizeof(Type));
+    gzclose(gz);
+}
+
+template<typename Type>
+void filesaving::save_file_2D_txt(Type *a, const int columns, const int rows, const std::string name, const bool need_transpose = false)
+{
+    fs.open(name.c_str(), std::ios_base::app|std::ios_base::out);
+
+    int i, j, nx, ny;
+    if (need_transpose)
+    {
+        nx = rows;
+        ny = columns;
+    }
+    else
+    {
+        nx = columns;
+        ny = rows;
+    }
+    for (i = 0; i < nx; i++)
+    {
+        for (j = 0; j < ny; j++)
+            fs << *(a + j*nx + i) << "\t";
+        fs << std::endl;
+    }
+
+    fs.close();
+}
+
 
 #endif // FILE_SAVING_H

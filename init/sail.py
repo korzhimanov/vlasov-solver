@@ -86,7 +86,7 @@ interval = 1
 
 output_directory_name = str(foil)+'_'+str(position)+'_'+str(thickness) # name of an output directory
 
-save_format = 'gzip' # format of saving files (txt, bin, gzip)
+save_format = 'bin' # format of saving files (txt, bin, gzip)
 save_dt = ppw/16 # time interval of saving
 
 save_fields = 1 # if fields saving in files is needed

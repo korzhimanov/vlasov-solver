@@ -19,6 +19,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <memory>
 #include "output.h"
 #include "file_saving.h"
 #include "solver.h"
@@ -45,7 +46,7 @@ Output::Output(pyinput* in, std::string dn, Solver* s, int* err) : save_fields(1
 
 Output::~Output()
 {
-    if (plasma_energy) delete[] plasma_energy;
+//    if (plasma_energy) delete[] plasma_energy;
     if (energy_file) energy_file.close();
 }
 
@@ -191,35 +192,32 @@ void Output::SaveFields(int k)
     {
         if (save_fields_format == "txt")
         {
-            filesaving::save_file_1D(solver->fdtd->ex, solver->mesh->MAX_Z, output_directory_name, "ex.txt");
-            filesaving::save_file_1D(solver->fdtd->ey, solver->mesh->MAX_Z, output_directory_name, "ey.txt");
-            filesaving::save_file_1D(solver->fdtd->hx, solver->mesh->MAX_Z, output_directory_name, "hx.txt");
-            filesaving::save_file_1D(solver->fdtd->hy, solver->mesh->MAX_Z, output_directory_name, "hy.txt");
-            filesaving::save_file_1D(solver->plasmas->ez, solver->mesh->MAX_Z, output_directory_name, "ez.txt");
-
-            filesaving::save_file_1D(solver->plasmas->a2, solver->mesh->MAX_Z, output_directory_name, "vecpot2.txt");
+            filesaving::save_file_1D_txt(solver->fdtd->ex, solver->mesh->MAX_Z, output_directory_name+"ex.txt");
+            filesaving::save_file_1D_txt(solver->fdtd->ey, solver->mesh->MAX_Z, output_directory_name+"ey.txt");
+            filesaving::save_file_1D_txt(solver->fdtd->hx, solver->mesh->MAX_Z, output_directory_name+"hx.txt");
+            filesaving::save_file_1D_txt(solver->fdtd->hy, solver->mesh->MAX_Z, output_directory_name+"hy.txt");
+            filesaving::save_file_1D_txt(solver->plasmas->ez, solver->mesh->MAX_Z, output_directory_name+"ez.txt");
+            filesaving::save_file_1D_txt(solver->plasmas->a2, solver->mesh->MAX_Z, output_directory_name+"vecpot2.txt");
         }
 
         if (save_fields_format == "bin")
         {
-            filesaving::save_file_1D_bin(solver->fdtd->ex, solver->mesh->MAX_Z, output_directory_name, "ex.bin");
-            filesaving::save_file_1D_bin(solver->fdtd->ey, solver->mesh->MAX_Z, output_directory_name, "ey.bin");
-            filesaving::save_file_1D_bin(solver->fdtd->hx, solver->mesh->MAX_Z, output_directory_name, "hx.bin");
-            filesaving::save_file_1D_bin(solver->fdtd->hy, solver->mesh->MAX_Z, output_directory_name, "hy.bin");
-            filesaving::save_file_1D_bin(solver->plasmas->ez, solver->mesh->MAX_Z, output_directory_name, "ez.bin");
-
-            filesaving::save_file_1D_bin(solver->plasmas->a2, solver->mesh->MAX_Z, output_directory_name, "vecpot2.bin");
+            filesaving::save_file_1D_bin(solver->fdtd->ex, solver->mesh->MAX_Z, output_directory_name+"ex.bin");
+            filesaving::save_file_1D_bin(solver->fdtd->ey, solver->mesh->MAX_Z, output_directory_name+"ey.bin");
+            filesaving::save_file_1D_bin(solver->fdtd->hx, solver->mesh->MAX_Z, output_directory_name+"hx.bin");
+            filesaving::save_file_1D_bin(solver->fdtd->hy, solver->mesh->MAX_Z, output_directory_name+"hy.bin");
+            filesaving::save_file_1D_bin(solver->plasmas->ez, solver->mesh->MAX_Z, output_directory_name+"ez.bin");
+            filesaving::save_file_1D_bin(solver->plasmas->a2, solver->mesh->MAX_Z, output_directory_name+"vecpot2.bin");
         }
 
         if (save_fields_format == "gzip")
         {
-            filesaving::save_file_1D_gzip(solver->fdtd->ex, solver->mesh->MAX_Z, output_directory_name, "ex.gz");
-            filesaving::save_file_1D_gzip(solver->fdtd->ey, solver->mesh->MAX_Z, output_directory_name, "ey.gz");
-            filesaving::save_file_1D_gzip(solver->fdtd->hx, solver->mesh->MAX_Z, output_directory_name, "hx.gz");
-            filesaving::save_file_1D_gzip(solver->fdtd->hy, solver->mesh->MAX_Z, output_directory_name, "hy.gz");
-            filesaving::save_file_1D_gzip(solver->plasmas->ez, solver->mesh->MAX_Z, output_directory_name, "ez.gz");
-
-            filesaving::save_file_1D_gzip(solver->plasmas->a2, solver->mesh->MAX_Z, output_directory_name, "vecpot2.gz");
+            filesaving::save_file_1D_gzip(solver->fdtd->ex, solver->mesh->MAX_Z, output_directory_name+"ex.gz");
+            filesaving::save_file_1D_gzip(solver->fdtd->ey, solver->mesh->MAX_Z, output_directory_name+"ey.gz");
+            filesaving::save_file_1D_gzip(solver->fdtd->hx, solver->mesh->MAX_Z, output_directory_name+"hx.gz");
+            filesaving::save_file_1D_gzip(solver->fdtd->hy, solver->mesh->MAX_Z, output_directory_name+"hy.gz");
+            filesaving::save_file_1D_gzip(solver->plasmas->ez, solver->mesh->MAX_Z, output_directory_name+"ez.gz");
+            filesaving::save_file_1D_gzip(solver->plasmas->a2, solver->mesh->MAX_Z, output_directory_name+"vecpot2.gz");
         }
 
     }
@@ -284,8 +282,6 @@ void Output::SavePrtData(int k)
 
 void Output::InitEnergyFile(std::string fn)
 {
-    em_flux = 0.;
-    plasma_energy = new double[solver->plasmas->species_number];
     energy_file.open((output_directory_name + fn).c_str(), std::ios_base::app);
     energy_file << std::right << std::scientific << std::setprecision(4);
     energy_file << std::setw(8) << "Step";
@@ -297,9 +293,18 @@ void Output::InitEnergyFile(std::string fn)
 
 void Output::WriteEnergy(int k)
 {
+    // initialize variables needed for function on the very first call
+    static double em_flux = 0.,
+                  electrostatic_energy = 0.,
+                  laser_energy = 0.,
+                  *plasma_energy,
+                  plasma_energy_0 = 0.,
+                  total_energy = 0.;
+
+    plasma_energy = new double[solver->plasmas->species_number];
     em_flux += solver->fdtd->FluxIn();
 
-    if (k%(solver->mesh->ppw) == 0)
+    if (k%(solver->mesh->ppw/16) == 0)
     {
         for (int sp = 0; sp < solver->plasmas->species_number; sp++)
             plasma_energy[sp] = solver->plasmas->pfc[sp].KineticEnergy(solver->plasmas->ax, solver->plasmas->ay);
@@ -321,4 +326,5 @@ void Output::WriteEnergy(int k)
         total_energy = mymath::sum(plasma_energy, solver->plasmas->species_number)+electrostatic_energy+laser_energy;
         energy_file << std::setw(16) << electrostatic_energy << std::setw(16) << laser_energy << std::setw(16) << em_flux << std::setw(16) << total_energy << std::setw(16) << total_energy-em_flux-plasma_energy_0 << std::endl;
     }
+    delete[] plasma_energy;
 }

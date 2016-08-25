@@ -42,12 +42,6 @@ class Output
 
     private:
         Solver* solver;
-        double em_flux, // flux density of electromagnetic field
-               electrostatic_energy,
-               laser_energy,
-               *plasma_energy,
-               plasma_energy_0,
-               total_energy;
 
     public:
         Output(pyinput*, std::string, Solver*, int*);
