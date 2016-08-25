@@ -13,6 +13,7 @@
  */
 
 #include "pfc.h"
+#include <sstream>
 #include <fstream>
 
 PFC::PFC() : onesixth(1./6.)
@@ -20,9 +21,9 @@ PFC::PFC() : onesixth(1./6.)
 
 }
 
-PFC::PFC(int particle_type, pyinput *in, Mesh *m, double *n0, double *p0) : onesixth(1./6.)
+PFC::PFC(int particle_type, pyinput *in, Mesh *m, double *n0, double *p0, int *err) : onesixth(1./6.)
 {
-    Init(particle_type, in, m, n0, p0);
+    *err = Init(particle_type, in, m, n0, p0);
 }
 
 PFC::~PFC()
@@ -34,50 +35,51 @@ PFC::~PFC()
     delete[] p2;
 }
 
-void PFC::SetNotNegative(pyinput *in, std::string name, int *var)
-{
-    *var = in->GetInt(name);
-    if ( *var < 0 ) std::cout << name + " mustnot be negative" << std::endl;
-}
-
-void PFC::SetPositive(pyinput *in, std::string name, int *var)
-{
-    *var = in->GetInt(name);
-    if ( *var <= 0 ) std::cout << name + " must be positive" << std::endl;
-}
-
-void PFC::SetPositive(pyinput *in, std::string name, double *var)
-{
-    *var = in->GetDouble(name);
-    if ( *var <= 0. ) std::cout << name + " must be positive" << std::endl;
-}
-
-void PFC::Init(int particle_type, pyinput *in, Mesh *m, double *n0, double *p0)
+int PFC::Init(int particle_type, pyinput *in, Mesh *m, double *n0, double *p0)
 {
     type = particle_type;
-
     mesh = m;
-
     N0 = *n0;
     P0 = *p0;
 
-    char *tmp = new char[32];
-    sprintf(tmp, "PROFILE_%d", type); profile = new pFunc(in->GetFunc(tmp));
+    std::stringstream ss;
+    ss << type;
+    std::string type_string(ss.str());
 
-    MAX_P =      64; sprintf(tmp,       "MAX_P_%d", type); SetPositive(in, tmp, &MAX_P);
-    MASS =       1.; sprintf(tmp,        "MASS_%d", type); SetPositive(in, tmp, &MASS);
-    CHARGE =     1.; sprintf(tmp,      "CHARGE_%d", type); CHARGE = in->GetDouble(tmp);
-    MEAN_P =     0.; sprintf(tmp,      "MEAN_P_%d", type); MEAN_P = in->GetDouble(tmp);
-    dp =       0.01; sprintf(tmp,          "dp_%d", type); SetPositive(in, tmp, &dp);
+    profile = new pFunc(in->GetFunc("PROFILE_"+type_string));
+
+    MAX_P = 64; if ( !in->SetPositive("MAX_P_"+type_string, &MAX_P) ) return 220;
+    MASS = 1.; if ( !in->SetPositive("MASS_"+type_string, &MASS) ) return 230;
+    CHARGE = 1.; if ( !in->Set("CHARGE_"+type_string, &CHARGE) ) return 240;
+    q_m = CHARGE / MASS;
+    q2_m2 = CHARGE * CHARGE / (MASS * MASS);
+    MEAN_P = 0.; if ( !in->Set("MEAN_P_"+type_string, &MEAN_P) ) return 250;
+    dp = 0.01; if ( !in->SetPositive("dp_"+type_string, &dp) ) return 260;
+
     if (fabs(MEAN_P) > 0.5*MAX_P*dp)
         std::cout << "WARNING! Mean momentum of " << type << " particle type is greater than maximal momentum of grid." << std::endl;
     if ((MEAN_P != 0.) && (fabs(MEAN_P) < dp))
         std::cout << "WARNING! Mean momentum of " << type << " particle type is less than momentum grid step." << std::endl;
-    dp2 =     dp*dp;
-    T_init =   0.02; sprintf(tmp,      "T_init_%d", type); SetPositive(in, tmp, &T_init);
-    if (T_init < 0.5*dp2/MASS)
+
+    T_init =   0.02; if ( !in->SetPositive("T_init_"+type_string, &T_init) ) return 270;
+    if (T_init < 0.5*dp*dp/MASS)
         std::cout << "WARNING! Temperature of " << type << " particle type cannot be resolved by momentum grid step." << std::endl;
-    delete[] tmp;
+
+    // some constants to speed up calculations
+    halfq_m = .5 * CHARGE / MASS;
+    half_qn0dz = .5  * CHARGE * N0 * mesh->dz * dp;
+    quart_q2n0dtdp_m = .25 * CHARGE * CHARGE * N0 * mesh->dt * dp / MASS;
+    qdt_mdp = CHARGE * mesh->dt / (MASS * dp);
+    q2dt_dzdp = CHARGE * CHARGE * mesh->dt / (mesh->dz * dp);
+    twicepisqrt3q2n0dpdzr_l = M_SQRT3 * CHARGE * CHARGE * N0 * dp * mesh->dz * M_PI * GSL_CONST_MKSA_ELECTRON_CHARGE * GSL_CONST_MKSA_ELECTRON_CHARGE / (GSL_CONST_MKSA_MASS_ELECTRON * GSL_CONST_MKSA_SPEED_OF_LIGHT * GSL_CONST_MKSA_SPEED_OF_LIGHT);
+
+    return 0;
+}
+
+void PFC::AllocMemory()
+{
+    f1 = new double[mesh->MAX_Z*MAX_P];
+    f2 = new double[mesh->MAX_Z*MAX_P];
 
     p  = new double[MAX_P];
     p2 = new double[MAX_P];
@@ -86,13 +88,6 @@ void PFC::Init(int particle_type, pyinput *in, Mesh *m, double *n0, double *p0)
         p[j] = (j-MAX_P/2)*dp;
         p2[j] = p[j]*p[j];
     }
-
-}
-
-void PFC::AllocMemory()
-{
-    f1 = new double[mesh->MAX_Z*MAX_P];
-    f2 = new double[mesh->MAX_Z*MAX_P];
 }
 
 void PFC::SaveInput(std::ofstream& fs)
@@ -107,18 +102,6 @@ void PFC::SaveInput(std::ofstream& fs)
 
 void PFC::SetDistribution()
 {
-    // some constants
-    quart_q2n0dtdp_m = .25 * CHARGE * CHARGE * N0 * mesh->dt * dp / MASS;
-    half_qn0dz       = .5  * CHARGE * N0 * mesh->dz * dp;
-    halfq_m          = .5  * CHARGE / MASS;
-    q_m              = CHARGE / MASS;
-    qdt_mdp          = CHARGE * mesh->dt / (MASS * dp);
-    q2dt_dzdp        = CHARGE * CHARGE * mesh->dt / (mesh->dz * dp);
-    double sqrt3q2n0dpdz    = M_SQRT3 * CHARGE * CHARGE * N0 * dp * mesh->dz;
-    double twicepir_l       = 2.e6 * M_PI * GSL_CONST_MKSA_ELECTRON_CHARGE * GSL_CONST_MKSA_ELECTRON_CHARGE / (GSL_CONST_MKSA_MASS_ELECTRON * GSL_CONST_MKSA_SPEED_OF_LIGHT * GSL_CONST_MKSA_SPEED_OF_LIGHT);
-    twicepisqrt3q2n0dpdzr_l = sqrt3q2n0dpdz*twicepir_l;
-    q2_m2            = CHARGE * CHARGE / (MASS * MASS);
-
     // initialize plasma distribution
     maxf = 0.;
     double

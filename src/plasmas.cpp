@@ -52,7 +52,10 @@ int Plasmas::Init(pyinput* in)
 
     pfc = new PFC[species_number];
     for (int sp = 0; sp < species_number; sp++)
-        pfc[sp].Init(sp, in, mesh, &critical_concentration, &mean_initial_momentum);
+    {
+        int err = pfc[sp].Init(sp, in, mesh, &critical_concentration, &mean_initial_momentum);
+        if (err != 0) return err;
+    }
 
     return 0;
 }

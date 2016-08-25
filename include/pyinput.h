@@ -35,6 +35,8 @@ class pyinput
         double GetDouble(std::string);
         std::string GetString(std::string);
 
+        bool Set(std::string name, int *var);
+        bool Set(std::string name, double *var);
         bool SetNotNegative(std::string name, int *var);
         bool SetPositive(std::string name, int *var);
         bool SetPositive(std::string name, double *var);

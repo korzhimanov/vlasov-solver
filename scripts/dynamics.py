@@ -17,7 +17,7 @@ fd = gzip.open('{0}/conc0.gz'.format(prefix), 'rb')
 a = np.frombuffer(fd.read(), dtype=np.float32)
 b = np.reshape(a, (-1, data_size))
 
-ax = fig.add_subplot(221)
+ax = fig.add_subplot(231)
 cax = ax.matshow(b, aspect='auto')
 fig.colorbar(cax)
 
@@ -25,7 +25,15 @@ fd = gzip.open('{0}/conc1.gz'.format(prefix), 'rb')
 a = np.frombuffer(fd.read(), dtype=np.float32)
 b = np.reshape(a, (-1, data_size))
 
-ax = fig.add_subplot(222)
+ax = fig.add_subplot(232)
+cax = ax.matshow(b, aspect='auto')
+fig.colorbar(cax)
+
+fd = gzip.open('{0}/conc2.gz'.format(prefix), 'rb')
+a = np.frombuffer(fd.read(), dtype=np.float32)
+b = np.reshape(a, (-1, data_size))
+
+ax = fig.add_subplot(233)
 cax = ax.matshow(b, aspect='auto')
 fig.colorbar(cax)
 
@@ -33,7 +41,7 @@ fd = gzip.open('{0}/ex.gz'.format(prefix), 'rb')
 a = np.frombuffer(fd.read(), dtype=np.double)
 b = np.reshape(a, (-1, data_size))
 
-ax = fig.add_subplot(223)
+ax = fig.add_subplot(234)
 cax = ax.matshow(b, aspect='auto')
 fig.colorbar(cax)
 
@@ -41,7 +49,15 @@ fd = gzip.open('{0}/ey.gz'.format(prefix), 'rb')
 a = np.frombuffer(fd.read(), dtype=np.double)
 b = np.reshape(a, (-1, data_size))
 
-ax = fig.add_subplot(224)
+ax = fig.add_subplot(235)
+cax = ax.matshow(b, aspect='auto')
+fig.colorbar(cax)
+
+fd = gzip.open('{0}/ez.gz'.format(prefix), 'rb')
+a = np.frombuffer(fd.read(), dtype=np.double)
+b = np.reshape(a, (-1, data_size))
+
+ax = fig.add_subplot(236)
 cax = ax.matshow(b, aspect='auto')
 fig.colorbar(cax)
 

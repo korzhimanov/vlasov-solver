@@ -38,39 +38,16 @@
 */
 class PFC
 {
-private:
-    double *f1,
-           *f2;
-    Mesh *mesh;
-    double N0, // critical concentration in a boosted frame (useful for simulation of oblique irradiation)
-           P0; // initial mean momentum along y-axis (useful for simulation of oblique irradiation in boosted frame)
-    int MAX_P, // number of steps in momentum space
-        type; // type of the particle
-    double
-        MASS, // particle mass
-        CHARGE, // particle charge
-        T_init, // initial temperature
-        MEAN_P, // mean momentum along z-axis
-        dp; // mesh step in momentum space
-    double maxf; // maximal value of the distribution function
-    double vdt_dz; // projections of velocity in phase space
-    const double onesixth; // just a constant equal to 1/6
-    double res, tmp, fold;
-    int new_cell;
-    double flux_part;
-    double quart_q2n0dtdp_m, half_qn0dz, q2dt_dzdp, qdt_mdp, halfq_m, q_m, twicepisqrt3q2n0dpdzr_l, q2_m2, dp2, *p, *p2;
-    pFunc *profile; // concentration profile function
-
 public:
 //------constructors---------------------------------------------------
     PFC();
-    PFC(int particle_type, pyinput *in, Mesh *grid, double *n0, double *p0);
+    PFC(int particle_type, pyinput *in, Mesh *grid, double *n0, double *p0, int *err);
 //------destructor-----------------------------------------------------
     ~PFC();
 
 //------initializing---------------------------------------------------
     // initializes all parameters, allocates memory and fills it with zeros
-    void Init(int particle_type, pyinput *in, Mesh *grid, double *n0, double *p0);
+    int Init(int particle_type, pyinput *in, Mesh *grid, double *n0, double *p0);
     void AllocMemory();
     void SetDistribution();
 
@@ -80,6 +57,7 @@ public:
     // calculates longitudinal field
     void CalcLongitudinalField(double *ez);
     void CalcCurrent(FDTD *fdtd, double *ax, double *ay, double *a2);
+
 private:
     // determines destination cell and parts of flux between it and nighbouring one
     void Destination(int old_cell, int &new_cell, int max_cell, double &flux_part);
@@ -106,12 +84,31 @@ public:
 
 private:
 //------miscellaneous--------------------------------------------------
-    void SetNotNegative(pyinput *in, std::string name, int *var);
-    void SetPositive(pyinput *in, std::string name, int *var);
-    void SetPositive(pyinput *in, std::string name, double *var);
-    void SetFunction(pyinput *in, std::string name, pFunc &F);
     void CalcConcDstr(float* n);
     double CalcEmitRadiation(double freq, FDTD *fdtd, double *ez, double *ax, double *ay, double *a2);
+
+private:
+    double *f1,
+           *f2;
+    Mesh *mesh;
+    double N0, // critical concentration in a boosted frame (useful for simulation of oblique irradiation)
+           P0; // initial mean momentum along y-axis (useful for simulation of oblique irradiation in boosted frame)
+    int MAX_P, // number of steps in momentum space
+        type; // type of the particle
+    double
+        MASS, // particle mass
+        CHARGE, // particle charge
+        T_init, // initial temperature
+        MEAN_P, // mean momentum along z-axis
+        dp; // mesh step in momentum space
+    double maxf; // maximal value of the distribution function
+    double vdt_dz; // projections of velocity in phase space
+    const double onesixth; // just a constant equal to 1/6
+    double res, tmp, fold;
+    int new_cell;
+    double flux_part;
+    double q_m, q2_m2, halfq_m, half_qn0dz, quart_q2n0dtdp_m, qdt_mdp, q2dt_dzdp, twicepisqrt3q2n0dpdzr_l, *p, *p2;
+    pFunc *profile; // concentration profile function
 };
 
 inline void PFC::Destination(int old_cell, int &new_cell, int max_cell, double &flux_part)

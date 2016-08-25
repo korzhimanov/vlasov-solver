@@ -56,11 +56,11 @@ dp_2 = 0.002 # step size for momentum (relative to Mc)
 T_init_2 = 2e-5 # initial temperature (relative to rest energy)
 MEAN_P_2 = 0. # mean momentum (in Mc)
 def PROFILE_2 (z):
-	return 0 #PROFILE_0 (z) - PROFILE_1 (z)
+	return PROFILE_0 (z) - PROFILE_1 (z)
 
 ## FIXED IONS
 def FIXED_IONS_PROFILE (z):
-	return PROFILE_0 (z) - PROFILE_1 (z) # profile of the fixed ions concentration distribution
+	return 0 # profile of the fixed ions concentration distribution
 
 ## PULSE PARAMETERS
 
@@ -86,7 +86,7 @@ interval = 1
 
 output_directory_name = str(foil)+'_'+str(position)+'_'+str(thickness) # name of an output directory
 
-save_format = 'bin' # format of saving files (txt, bin, gzip)
+save_format = 'gzip' # format of saving files (txt, bin, gzip)
 save_dt = ppw/16 # time interval of saving
 
 save_fields = 1 # if fields saving in files is needed

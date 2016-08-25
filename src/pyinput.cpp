@@ -59,6 +59,18 @@ pFunc pyinput::GetFunc(std::string name)
     return func;
 }
 
+bool pyinput::Set(std::string name, int *var)
+{
+    *var = GetInt(name);
+    return true;
+}
+
+bool pyinput::Set(std::string name, double *var)
+{
+    *var = GetDouble(name);
+    return true;
+}
+
 bool pyinput::SetNotNegative(std::string name, int *var)
 {
     *var = GetInt(name);
