@@ -14,16 +14,15 @@
  * The file contains argument parser, timer, main cycle and basic logging.
  */
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
+//#include <cstdlib>
+#include <cstring>
+#include <ctime>
 
-#include <cstdlib>
-#include <string>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
-#include <ctime>
+#include <string>
+
 #include "mesh.h"
 #include "pyinput.h"
 #include "solver.h"

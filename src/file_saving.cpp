@@ -14,7 +14,9 @@
 
 #include "file_saving.h"
 #include <string>
+#include <iostream>
 #include <sstream>
+#include <sys/stat.h>
 
 namespace filesaving {
 // when creating directory put "/" at the end of its name

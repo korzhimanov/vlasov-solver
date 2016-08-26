@@ -69,6 +69,7 @@ void Particle::MakeStep(double dt, double *E, double *B)
         /**
          * \todo Can be done smarter (and faster) without switch-case.
          * \todo Change division by gamma to multiplication to (1/gamma).
+         * \todo Introduce constant q_m instead of q/m.
          */
         switch (i)
         {

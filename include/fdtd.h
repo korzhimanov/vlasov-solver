@@ -15,7 +15,8 @@
 #ifndef FDTD_H
 #define FDTD_H
 
-#include <cmath>
+#include "pfunc.h"
+#include "pyinput.h"
 #include "mesh.h"
 
 /**

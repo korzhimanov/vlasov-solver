@@ -14,16 +14,14 @@
  * The file contains argument parser, timer, main cycle and basic logging.
  */
 
+#include "output.h"
 
-#include <string>
-#include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <memory>
-#include "output.h"
-#include "file_saving.h"
-#include "solver.h"
+#include <iostream>
 
+#include "file_saving.h"
+#include "mymath.h"
 
 Output::Output(pyinput* in, std::string dn, Solver* s, int* err) : save_fields(1),
                                                          save_concs(1),

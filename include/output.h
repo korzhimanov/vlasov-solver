@@ -18,8 +18,9 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#include <string>
 #include <fstream>
+#include <string>
+
 #include "pyinput.h"
 #include "solver.h"
 

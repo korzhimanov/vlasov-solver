@@ -12,12 +12,14 @@
  * \copyright The MIT License (MIT)
  */
 
-
 #ifndef PLASMAS_H
 #define PLASMAS_H
 
-#include "pfunc.h"
+#include "mesh.h"
+#include "mymath.h"
 #include "pfc.h"
+#include "pfunc.h"
+#include "pyinput.h"
 
 class Plasmas
 {

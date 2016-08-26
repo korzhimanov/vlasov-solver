@@ -14,12 +14,8 @@
  */
 
 #include "solver.h"
+
 #include <cmath>
-#include "pyinput.h"
-#include "mesh.h"
-#include "plasmas.h"
-#include "fdtd.h"
-#include "testparticles.h"
 
 Solver::Solver(pyinput* in, Mesh* m, int* err) : mesh(m)
 {

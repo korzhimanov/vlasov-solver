@@ -16,13 +16,8 @@
 #define FILE_SAVING_H
 
 #include <cstdlib>
-#include <cstdio>
-#include <cstdarg>
-#include <cstring>
-#include <iostream>
 #include <fstream>
 #include <zlib.h>
-#include <sys/stat.h>
 
 static std::ofstream fs;
 static gzFile gz;

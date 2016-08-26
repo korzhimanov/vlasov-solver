@@ -12,16 +12,14 @@
  * \copyright The MIT License (MIT)
  */
 
-
 #include "testparticles.h"
-#include <cmath>
-#include "mesh.h"
-#include "particle.h"
-#include "pyinput.h"
-#include "pfunc.h"
 
-
-TestParticles::TestParticles(pyinput* in, int* err) : particles_number(0), start_point(0), interval(1.), mass(1.), charge(0.), mean_initial_momentum(0.)
+TestParticles::TestParticles(pyinput* in, int* err) : particles_number(0),
+                                                      start_point(0),
+                                                      interval(1.),
+                                                      mass(1.),
+                                                      charge(0.),
+                                                      mean_initial_momentum(0.)
 {
     *err = Init(in);
 }

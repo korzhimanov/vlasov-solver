@@ -13,9 +13,6 @@
  */
 
 #include "mesh.h"
-#include "pyinput.h"
-#include <iostream>
-#include <cmath>
 
 Mesh::Mesh() : ppw(16),
                MAX_Z(32),

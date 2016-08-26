@@ -13,6 +13,7 @@
  */
 
 #include "pyinput.h"
+#include <iostream>
 
 pyinput::pyinput()
 {

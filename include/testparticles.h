@@ -37,9 +37,6 @@ class TestParticles
         int Init(pyinput*);
         void AllocMemory();
         void InitParticles(Mesh*);
-
-    private:
-        /* add your private declarations */
 };
 
-#endif /* TESTPARTICLES_H */
+#endif // TESTPARTICLES_H

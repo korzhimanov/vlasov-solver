@@ -13,10 +13,7 @@
  */
 
 #include "fdtd.h"
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-#include <iostream>
+
 #include "mymath.h"
 
 FDTD::FDTD()

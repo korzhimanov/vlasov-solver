@@ -12,12 +12,7 @@
  * \copyright The MIT License (MIT)
  */
 
-
 #include "plasmas.h"
-#include "mymath.h"
-#include "pfunc.h"
-#include "pyinput.h"
-#include "pfc.h"
 
 Plasmas::Plasmas(pyinput* in, Mesh* m, int* err) : species_number(0), critical_concentration(1.), mean_initial_momentum(0.), mesh(m)
 {

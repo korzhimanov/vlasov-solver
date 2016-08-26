@@ -16,15 +16,10 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-#include <cmath>
-#include "mymath.h"
-#include "file_saving.h"
 #include "fdtd.h"
+#include "mesh.h"
 #include "plasmas.h"
-#include "particle.h"
+#include "pyinput.h"
 #include "testparticles.h"
 
 /**

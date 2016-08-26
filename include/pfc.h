@@ -15,20 +15,17 @@
 #ifndef PFC_H
 #define PFC_H
 
+#include <fstream>
+#include <string>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-#include <cstdio>
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <string>
-#include <zlib.h>
+
+#include "fdtd.h"
+#include "pfunc.h"
 #include "pyinput.h"
 #include "mesh.h"
-#include "fdtd.h"
-#include "mymath.h"
-#include "file_saving.h"
 
 /**
  * /class PFC

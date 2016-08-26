@@ -16,8 +16,7 @@
 #define PYINPUT_H
 
 #include "pfunc.h"
-#include <Python.h>
-#include <iostream>
+#include <string>
 
 /**
  * /class pFunc

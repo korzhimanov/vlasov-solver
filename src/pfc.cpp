@@ -13,8 +13,13 @@
  */
 
 #include "pfc.h"
+
+#include <iostream>
 #include <sstream>
-#include <fstream>
+
+#include <zlib.h>
+
+#include "file_saving.h"
 #include "mymath.h"
 
 PFC::PFC()

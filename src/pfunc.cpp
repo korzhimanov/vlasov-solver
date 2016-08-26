@@ -13,8 +13,6 @@
  */
 
 #include "pfunc.h"
-#include <cstdarg>
-#include <iostream>
 
 pFunc::pFunc(PyObject* pObj)
 {
