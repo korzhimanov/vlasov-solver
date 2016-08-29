@@ -21,18 +21,17 @@
  * /class pFunc
  * The class for using functions defined in python scripts
 */
-class pFunc
-{
-    public:
-        pFunc(PyObject*);
-        pFunc(const pFunc&);
-        virtual ~pFunc();
-        double call(double);
-        double call(double, double);
-        double call(double, double, double);
+class pFunc {
+ public:
+  pFunc(PyObject *);
+  pFunc(const pFunc &);
+  virtual ~pFunc();
+  double call(double);
+  double call(double, double);
+  double call(double, double, double);
 
-    public:
-        PyObject *function;
+ public:
+  PyObject *function;
 };
 
-#endif // PFUNC_H
+#endif  // PFUNC_H

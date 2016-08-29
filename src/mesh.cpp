@@ -12,34 +12,32 @@
  * \copyright The MIT License (MIT)
  */
 
-#include "mesh.h"
+#include "include/mesh.h"
 
-Mesh::Mesh() : ppw(16),
-               MAX_Z(32),
-               MAX_T(32),
-               dz(2.*M_PI/16),
-               dt(2.*M_PI/16),
-               dt_dz(1.)
-{
+Mesh::Mesh()
+    : ppw(16),
+      MAX_Z(32),
+      MAX_T(32),
+      dz(2. * M_PI / 16),
+      dt(2. * M_PI / 16),
+      dt_dz(1.) {}
+
+Mesh::Mesh(pyinput *in, int *err)
+    : ppw(16),
+      MAX_Z(32),
+      MAX_T(32),
+      dz(2. * M_PI / 16),
+      dt(2. * M_PI / 16),
+      dt_dz(1.) {
+  *err = Init(in);
 }
 
-Mesh::Mesh(pyinput *in, int *err) : ppw(16),
-                                    MAX_Z(32),
-                                    MAX_T(32),
-                                    dz(2.*M_PI/16),
-                                    dt(2.*M_PI/16),
-                                    dt_dz(1.)
-{
-    *err = Init(in);
-}
-
-int Mesh::Init(pyinput *in)
-{
-    if ( !in->SetPositive(  "ppw",    &ppw  ) ) return 100;
-    if ( !in->SetPositive("MAX_Z",    &MAX_Z) ) return 110;
-    if ( !in->SetPositive("MAX_T",    &MAX_T) ) return 120;
-    if ( !in->SetPositive(   "dz",    &dz   ) ) return 130;
-    if ( !in->SetPositive(   "dt",    &dt   ) ) return 140;
-    dt_dz = dt/dz;
-    return 0;
+int Mesh::Init(pyinput *in) {
+  if (!in->SetPositive("ppw", &ppw)) return 100;
+  if (!in->SetPositive("MAX_Z", &MAX_Z)) return 110;
+  if (!in->SetPositive("MAX_T", &MAX_T)) return 120;
+  if (!in->SetPositive("dz", &dz)) return 130;
+  if (!in->SetPositive("dt", &dt)) return 140;
+  dt_dz = dt / dz;
+  return 0;
 }

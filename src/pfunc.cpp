@@ -12,67 +12,55 @@
  * \copyright The MIT License (MIT)
  */
 
-#include "pfunc.h"
+#include "include/pfunc.h"
 
-pFunc::pFunc(PyObject* pObj)
-{
-    function = pObj;
+pFunc::pFunc(PyObject* pObj) { function = pObj; }
+
+pFunc::pFunc(const pFunc& pfunc) { function = pfunc.function; }
+
+pFunc::~pFunc() { Py_DECREF(function); }
+
+double pFunc::call(double arg1) {
+  PyObject* ArgsTuple = PyTuple_New(1);
+  PyTuple_SetItem(ArgsTuple, 0, PyFloat_FromDouble(arg1));
+
+  PyObject* Result = PyObject_CallObject(function, ArgsTuple);
+
+  double ret = PyFloat_AsDouble(Result);
+
+  Py_DECREF(ArgsTuple);
+  Py_DECREF(Result);
+
+  return ret;
 }
 
-pFunc::pFunc(const pFunc& pfunc)
-{
-    function = pfunc.function;
+double pFunc::call(double arg1, double arg2) {
+  PyObject* ArgsTuple = PyTuple_New(2);
+  PyTuple_SetItem(ArgsTuple, 0, PyFloat_FromDouble(arg1));
+  PyTuple_SetItem(ArgsTuple, 1, PyFloat_FromDouble(arg2));
+
+  PyObject* Result = PyObject_CallObject(function, ArgsTuple);
+
+  double ret = PyFloat_AsDouble(Result);
+
+  Py_DECREF(ArgsTuple);
+  Py_DECREF(Result);
+
+  return ret;
 }
 
-pFunc::~pFunc()
-{
-    Py_DECREF(function);
-}
+double pFunc::call(double arg1, double arg2, double arg3) {
+  PyObject* ArgsTuple = PyTuple_New(3);
+  PyTuple_SetItem(ArgsTuple, 0, PyFloat_FromDouble(arg1));
+  PyTuple_SetItem(ArgsTuple, 1, PyFloat_FromDouble(arg2));
+  PyTuple_SetItem(ArgsTuple, 2, PyFloat_FromDouble(arg3));
 
-double pFunc::call(double arg1)
-{
-    PyObject* ArgsTuple = PyTuple_New(1);
-    PyTuple_SetItem(ArgsTuple, 0, PyFloat_FromDouble(arg1));
+  PyObject* Result = PyObject_CallObject(function, ArgsTuple);
 
-    PyObject* Result = PyObject_CallObject(function, ArgsTuple);
+  double ret = PyFloat_AsDouble(Result);
 
-    double ret = PyFloat_AsDouble(Result);
+  Py_DECREF(ArgsTuple);
+  Py_DECREF(Result);
 
-    Py_DECREF(ArgsTuple);
-    Py_DECREF(Result);
-
-    return ret;
-}
-
-double pFunc::call(double arg1, double arg2)
-{
-    PyObject* ArgsTuple = PyTuple_New(2);
-    PyTuple_SetItem(ArgsTuple, 0, PyFloat_FromDouble(arg1));
-    PyTuple_SetItem(ArgsTuple, 1, PyFloat_FromDouble(arg2));
-
-    PyObject* Result = PyObject_CallObject(function, ArgsTuple);
-
-    double ret = PyFloat_AsDouble(Result);
-
-    Py_DECREF(ArgsTuple);
-    Py_DECREF(Result);
-
-    return ret;
-}
-
-double pFunc::call(double arg1, double arg2, double arg3)
-{
-    PyObject* ArgsTuple = PyTuple_New(3);
-    PyTuple_SetItem(ArgsTuple, 0, PyFloat_FromDouble(arg1));
-    PyTuple_SetItem(ArgsTuple, 1, PyFloat_FromDouble(arg2));
-    PyTuple_SetItem(ArgsTuple, 2, PyFloat_FromDouble(arg3));
-
-    PyObject* Result = PyObject_CallObject(function, ArgsTuple);
-
-    double ret = PyFloat_AsDouble(Result);
-
-    Py_DECREF(ArgsTuple);
-    Py_DECREF(Result);
-
-    return ret;
+  return ret;
 }

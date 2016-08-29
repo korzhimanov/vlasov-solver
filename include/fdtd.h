@@ -15,93 +15,87 @@
 #ifndef FDTD_H
 #define FDTD_H
 
-#include "pfunc.h"
-#include "pyinput.h"
-#include "mesh.h"
+#include "include/mesh.h"
+#include "include/pfunc.h"
+#include "include/pyinput.h"
 
 /**
  * /class FDTD
  * The class implements the FDTD solver
 */
-class FDTD
-{
-    public:
-        double *ex, *ey, *hx, *hy; // fields
-        double exl, eyl, exr, eyr, hxl, hyl, hxr, hyr; // field sources on boundaries
+class FDTD {
+ public:
+  double *ex, *ey, *hx, *hy;                      // fields
+  double exl, eyl, exr, eyr, hxl, hyl, hxr, hyr;  // field sources on boundaries
 
-    private:
-        Mesh *mesh;
-        int PML; // number of PML-steps
-        double MAX_SIGMA; // maximal absorption coefficient in PML
-        double *r, *r1; // absorption coefficients in PML
-        int SOURCE; // the position of a source relative to PML layer
-        pFunc *pulse_x,
-              *pulse_y;
+ private:
+  Mesh *mesh;
+  int PML;           // number of PML-steps
+  double MAX_SIGMA;  // maximal absorption coefficient in PML
+  double *r, *r1;    // absorption coefficients in PML
+  int SOURCE;        // the position of a source relative to PML layer
+  pFunc *pulse_x, *pulse_y;
 
-    public:
-//------constructors---------------------------------------------------
-        FDTD();
-        FDTD(pyinput*, Mesh*, int*);
-//------destructor-----------------------------------------------------
-        virtual ~FDTD();
+ public:
+  //------constructors---------------------------------------------------
+  FDTD();
+  FDTD(pyinput *, Mesh *, int *);
+  //------destructor-----------------------------------------------------
+  virtual ~FDTD();
 
-//------initialization-------------------------------------------------
-        // initializes all but PML parameters, allocates memory for fields and puts all of them equal to zero
-        int Init(pyinput*);
-        // allocates memory for fields and puts all of them equal to zero
-        void AllocMemory();
+  //------initialization-------------------------------------------------
+  // initializes all but PML parameters, allocates memory for fields and puts
+  // all of them equal to zero
+  int Init(pyinput *);
+  // allocates memory for fields and puts all of them equal to zero
+  void AllocMemory();
 
-//------solver---------------------------------------------------------
-        // solves Maxwell equations
-        void Maxwell();
+  //------solver---------------------------------------------------------
+  // solves Maxwell equations
+  void Maxwell();
 
-        /**
-         * \todo Change .5*mesh->dz and .5*mesh->dt to constants
-         */
-        inline void CalcSources(double t)
-        {
-            exl =   pulse_x->call((double)(t - .5*mesh->dz));
-            eyl =   pulse_y->call((double)(t - .5*mesh->dz));
-            hxl = - pulse_y->call((double)(t + .5*mesh->dt));
-            hyl =   pulse_x->call((double)(t + .5*mesh->dt));
-        }
+  /**
+   * \todo Change .5*mesh->dz and .5*mesh->dt to constants
+   */
+  inline void CalcSources(double t) {
+    exl = pulse_x->call((double)(t - .5 * mesh->dz));
+    eyl = pulse_y->call((double)(t - .5 * mesh->dz));
+    hxl = -pulse_y->call((double)(t + .5 * mesh->dt));
+    hyl = pulse_x->call((double)(t + .5 * mesh->dt));
+  }
 
-//------informative functions------------------------------------------
-        // calculates flux in x-direction at 'cell'
-        inline double Flux(int cell)
-        {
-            return 0.5 * (ex[cell] * (hy[cell] + hy[cell-1]) - ey[cell] * (hx[cell] + hx[cell-1])) * mesh->dt;
-        }
-        // calculates flux incoming into box through boundaries
-        inline double FluxIn()
-        {
-            return Flux(PML + SOURCE + 2) - Flux(mesh->MAX_Z - PML - 3);
-        }
-        // calculates flux outcoming out of box through boundaries
-        inline double FluxOut()
-        {
-            return - FluxIn();
-        }
-        // calculates full electromagnetic energy between 'l_cell' and 'r_cell'
-        // by default calculates energy consisted in the region between PML regions
-        inline double Energy(int l_cell, int r_cell)
-        {
-            double tmp = 0.;
-            for (int i = l_cell; i < r_cell; i++)
-                tmp += hx[i]*hx[i] + hy[i]*hy[i] + ex[i]*ex[i] + ey[i]*ey[i];
-            tmp += 0.5 * (ex[r_cell]*ex[r_cell] + ey[r_cell]*ey[r_cell] - ex[l_cell]*ex[l_cell] - ey[l_cell]*ey[l_cell]);
-            tmp *= 0.5 * mesh->dz;
-            return tmp;
-        }
-        inline double Energy()
-        {
-            return Energy(PML + SOURCE + 2, mesh->MAX_Z - PML - 3);
-        }
+  //------informative functions------------------------------------------
+  // calculates flux in x-direction at 'cell'
+  inline double Flux(int cell) {
+    return 0.5 * (ex[cell] * (hy[cell] + hy[cell - 1]) -
+                  ey[cell] * (hx[cell] + hx[cell - 1])) *
+           mesh->dt;
+  }
+  // calculates flux incoming into box through boundaries
+  inline double FluxIn() {
+    return Flux(PML + SOURCE + 2) - Flux(mesh->MAX_Z - PML - 3);
+  }
+  // calculates flux outcoming out of box through boundaries
+  inline double FluxOut() { return -FluxIn(); }
+  // calculates full electromagnetic energy between 'l_cell' and 'r_cell'
+  // by default calculates energy consisted in the region between PML regions
+  inline double Energy(int l_cell, int r_cell) {
+    double tmp = 0.;
+    for (int i = l_cell; i < r_cell; i++)
+      tmp += hx[i] * hx[i] + hy[i] * hy[i] + ex[i] * ex[i] + ey[i] * ey[i];
+    tmp += 0.5 * (ex[r_cell] * ex[r_cell] + ey[r_cell] * ey[r_cell] -
+                  ex[l_cell] * ex[l_cell] - ey[l_cell] * ey[l_cell]);
+    tmp *= 0.5 * mesh->dz;
+    return tmp;
+  }
+  inline double Energy() {
+    return Energy(PML + SOURCE + 2, mesh->MAX_Z - PML - 3);
+  }
 
-    private:
-//------miscellaneous--------------------------------------------------
-        // calculates PML absorption coefficients
-        void CalcPMLCoeff();
+ private:
+  //------miscellaneous--------------------------------------------------
+  // calculates PML absorption coefficients
+  void CalcPMLCoeff();
 };
 
-#endif // FDTD_H
+#endif  // FDTD_H

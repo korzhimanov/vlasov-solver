@@ -18,23 +18,23 @@
 
 /**
  * /class Particle
- * The class implements parameters of test particles and some useful methods on them
+ * The class implements parameters of test particles and some useful methods on
+ * them
 */
-class Particle
-{
-    public:
-        Particle();
-        Particle(double *position, double *momentum, double mass, double charge);
-        ~Particle();
-        void SetPosition(double *position);
-        void SetMomentum(double *momentum);
-        double GetGamma();
-        void MakeStep(double dt, double *E, double *B);
+class Particle {
+ public:
+  Particle();
+  Particle(double *position, double *momentum, double mass, double charge);
+  ~Particle();
+  void SetPosition(double *position);
+  void SetMomentum(double *momentum);
+  double GetGamma();
+  void MakeStep(double dt, double *E, double *B);
 
-        double* r; // position in space
-        double* p; // momentum
-        int q; // charge
-        double m; // mass
+  double *r;  // position in space
+  double *p;  // momentum
+  int q;      // charge
+  double m;   // mass
 };
 
-#endif // PARTICLE_H
+#endif  // PARTICLE_H

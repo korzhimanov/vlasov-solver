@@ -22,29 +22,28 @@
  * /class pFunc
  * The class for reading python script with input parameters
 */
-class pyinput
-{
-    public:
-        pyinput();
-        virtual ~pyinput();
+class pyinput {
+ public:
+  pyinput();
+  virtual ~pyinput();
 
-        void ReadFile(std::string);
+  void ReadFile(std::string);
 
-        int GetInt(std::string);
-        double GetDouble(std::string);
-        std::string GetString(std::string);
+  int GetInt(std::string);
+  double GetDouble(std::string);
+  std::string GetString(std::string);
 
-        bool Set(std::string name, int *var);
-        bool Set(std::string name, double *var);
-        bool SetNotNegative(std::string name, int *var);
-        bool SetPositive(std::string name, int *var);
-        bool SetPositive(std::string name, double *var);
+  bool Set(std::string name, int *var);
+  bool Set(std::string name, double *var);
+  bool SetNotNegative(std::string name, int *var);
+  bool SetPositive(std::string name, int *var);
+  bool SetPositive(std::string name, double *var);
 
-        pFunc GetFunc(std::string);
+  pFunc GetFunc(std::string);
 
-    private:
-        FILE *f;
-        PyObject *main_module, *main_dict;
+ private:
+  FILE *f;
+  PyObject *main_module, *main_dict;
 };
 
-#endif // PYINPUT_H
+#endif  // PYINPUT_H

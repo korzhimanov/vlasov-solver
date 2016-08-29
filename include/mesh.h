@@ -21,19 +21,15 @@
  * /class Mesh
  * The class to store and initialeze mesh parameters
 */
-class Mesh
-{
-public:
-    int ppw,
-        MAX_Z,
-        MAX_T;
-    double dz,
-           dt,
-           dt_dz;
-public:
-    Mesh();
-    Mesh(pyinput*, int*);
-    int Init(pyinput*);
+class Mesh {
+ public:
+  int ppw, MAX_Z, MAX_T;
+  double dz, dt, dt_dz;
+
+ public:
+  Mesh();
+  Mesh(pyinput*, int*);
+  int Init(pyinput*);
 };
 
-#endif // MESH_H
+#endif  // MESH_H

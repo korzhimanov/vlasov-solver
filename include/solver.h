@@ -10,78 +10,78 @@
  * \brief The header file which defines Solver class and implements its methods
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
- * \bug The methods of the Solver class are implemented in the header due to some problems with compilation.
+ * \bug The methods of the Solver class are implemented in the header due to
+ * some problems with compilation.
  */
 
 #ifndef SOLVER_H
 #define SOLVER_H
 
-#include "fdtd.h"
-#include "mesh.h"
-#include "plasmas.h"
-#include "pyinput.h"
-#include "testparticles.h"
+#include "include/fdtd.h"
+#include "include/mesh.h"
+#include "include/plasmas.h"
+#include "include/pyinput.h"
+#include "include/testparticles.h"
 
 /**
  * \class Solver
- * The main class where actually the main sub-steps of each iteration are defined
+ * The main class where actually the main sub-steps of each iteration are
+ * defined
  */
-class Solver
-{
-    public:
-        Mesh* mesh;
-        // variables containing data
-        Plasmas *plasmas;
-        FDTD *fdtd;
-        TestParticles *particles;
+class Solver {
+ public:
+  Mesh *mesh;
+  // variables containing data
+  Plasmas *plasmas;
+  FDTD *fdtd;
+  TestParticles *particles;
 
-    private:
-        // auxiliary variables
-        double halfn0dz;
+ private:
+  // auxiliary variables
+  double halfn0dz;
 
-    public:
-//------constructors---------------------------------------------------
-        Solver(pyinput*, Mesh*, int*);
-//------destructor-----------------------------------------------------
-        virtual ~Solver();
+ public:
+  //------constructors---------------------------------------------------
+  Solver(pyinput *, Mesh *, int *);
+  //------destructor-----------------------------------------------------
+  virtual ~Solver();
 
-//------initialisation-------------------------------------------------
-        int Init(pyinput*, int*);
+  //------initialisation-------------------------------------------------
+  int Init(pyinput *, int *);
 
-//------calculations---------------------------------------------------
-        inline void CalcTransFields()
-        {
-            // evaluates vector potential
-            for (int i = 0; i <= mesh->MAX_Z; i++)
-            {
-                plasmas->ax[i] -= fdtd->ex[i]*mesh->dt;
-                plasmas->ay[i] -= fdtd->ey[i]*mesh->dt;
-                plasmas->a2[i] = plasmas->ax[i]*plasmas->ax[i]+plasmas->ay[i]*plasmas->ay[i];
-            }
+  //------calculations---------------------------------------------------
+  inline void CalcTransFields() {
+    // evaluates vector potential
+    for (int i = 0; i <= mesh->MAX_Z; i++) {
+      plasmas->ax[i] -= fdtd->ex[i] * mesh->dt;
+      plasmas->ay[i] -= fdtd->ey[i] * mesh->dt;
+      plasmas->a2[i] =
+          plasmas->ax[i] * plasmas->ax[i] + plasmas->ay[i] * plasmas->ay[i];
+    }
 
-            // evaluating electric and magnetic fields
-            fdtd->Maxwell();
-        }
+    // evaluating electric and magnetic fields
+    fdtd->Maxwell();
+  }
 
-        void MoveParticles();
+  void MoveParticles();
 
-        inline void FieldGeneration()
-        {
-            // field generation by plasma currents
-            for (int sp = 0; sp < plasmas->species_number; sp++)
-                plasmas->pfc[sp].CalcCurrent(fdtd, plasmas->ax, plasmas->ay, plasmas->a2);
+  inline void FieldGeneration() {
+    // field generation by plasma currents
+    for (int sp = 0; sp < plasmas->species_number; sp++)
+      plasmas->pfc[sp].CalcCurrent(fdtd, plasmas->ax, plasmas->ay, plasmas->a2);
 
-            // field generation by fixed ions (only in a boosted frame)
-            if (halfn0dz > 0.)
-            {
-                fdtd->ey[0] -= halfn0dz*plasmas->fixed_ions_conc[0];
-                for (int i = 1; i < mesh->MAX_Z; i++)
-                    fdtd->ey[i] -= halfn0dz*(plasmas->fixed_ions_conc[i]+plasmas->fixed_ions_conc[i-1]);
-                fdtd->ey[mesh->MAX_Z] -= halfn0dz*plasmas->fixed_ions_conc[mesh->MAX_Z-1];
-            }
-        }
+    // field generation by fixed ions (only in a boosted frame)
+    if (halfn0dz > 0.) {
+      fdtd->ey[0] -= halfn0dz * plasmas->fixed_ions_conc[0];
+      for (int i = 1; i < mesh->MAX_Z; i++)
+        fdtd->ey[i] -= halfn0dz * (plasmas->fixed_ions_conc[i] +
+                                   plasmas->fixed_ions_conc[i - 1]);
+      fdtd->ey[mesh->MAX_Z] -=
+          halfn0dz * plasmas->fixed_ions_conc[mesh->MAX_Z - 1];
+    }
+  }
 
-    private:
+ private:
 };
 
-#endif // SOLVER_H
+#endif  // SOLVER_H
