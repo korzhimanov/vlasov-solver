@@ -7,7 +7,7 @@
 
 /**
  * \file pyinput.cpp
- * \brief The source file which implements the methods of the pyinput class
+ * \brief The source file which implements the methods of the PyInput class
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
  */
@@ -17,7 +17,7 @@
 
 #include "include/errors.h"
 
-pyinput::pyinput(int &err) {
+PyInput::PyInput(int &err) {
   Py_Initialize();
   if (!Py_IsInitialized()) {
     PyErr_Print();
@@ -31,14 +31,14 @@ pyinput::pyinput(int &err) {
   PyRun_SimpleString("def sqr(x):\n\treturn x*x");
 }
 
-pyinput::~pyinput() {
+PyInput::~PyInput() {
   if (Py_IsInitialized()) Py_Finalize();
 }
 
 /**
  * \todo Add error output
  */
-void pyinput::ReadFile(std::string filename, int &err) {
+void PyInput::ReadFile(std::string filename, int &err) {
   FILE *f = fopen(filename.c_str(), "r");
   if (f == NULL) {
     std::cerr << "Cannot open init-file " << filename << "." << std::endl;
@@ -54,7 +54,7 @@ void pyinput::ReadFile(std::string filename, int &err) {
   }
 }
 
-void pyinput::Set(std::string name, int &var, int &err) const {
+void PyInput::Set(std::string name, int &var, int &err) const {
   PyObject *io = GetVarObject(name, err);
   if (err == 0) {
     if (!PyInt_Check(io)) {
@@ -65,7 +65,7 @@ void pyinput::Set(std::string name, int &var, int &err) const {
   }
 }
 
-void pyinput::Set(std::string name, double &var, int &err) const {
+void PyInput::Set(std::string name, double &var, int &err) const {
   PyObject *io = GetVarObject(name, err);
   if (err == 0) {
     if (!PyFloat_Check(io)) {
@@ -76,7 +76,7 @@ void pyinput::Set(std::string name, double &var, int &err) const {
   }
 }
 
-void pyinput::Set(std::string name, bool &var, int &err) const {
+void PyInput::Set(std::string name, bool &var, int &err) const {
   PyObject *io = GetVarObject(name, err);
   if (err == 0) {
     if (!PyBool_Check(io)) {
@@ -87,7 +87,7 @@ void pyinput::Set(std::string name, bool &var, int &err) const {
   }
 }
 
-void pyinput::Set(std::string name, std::string &var, int &err) const {
+void PyInput::Set(std::string name, std::string &var, int &err) const {
   PyObject *io = GetVarObject(name, err);
   if (err == 0) {
     if (!PyString_Check(io)) {
@@ -98,7 +98,7 @@ void pyinput::Set(std::string name, std::string &var, int &err) const {
   }
 }
 
-void pyinput::SetNotNegative(std::string name, int &var, int &err) const {
+void PyInput::SetNotNegative(std::string name, int &var, int &err) const {
   Set(name, var, err);
   if (err) return;
   if (var < 0) {
@@ -107,7 +107,7 @@ void pyinput::SetNotNegative(std::string name, int &var, int &err) const {
   }
 }
 
-void pyinput::SetPositive(std::string name, int &var, int &err) const {
+void PyInput::SetPositive(std::string name, int &var, int &err) const {
   Set(name, var, err);
   if (err) return;
   if (var <= 0) {
@@ -116,7 +116,7 @@ void pyinput::SetPositive(std::string name, int &var, int &err) const {
   }
 }
 
-void pyinput::SetPositive(std::string name, double &var, int &err) const {
+void PyInput::SetPositive(std::string name, double &var, int &err) const {
   Set(name, var, err);
   if (err) return;
   if (var <= 0.) {
@@ -125,12 +125,11 @@ void pyinput::SetPositive(std::string name, double &var, int &err) const {
   }
 }
 
-pFunc pyinput::GetFunc(std::string name, int &err) const {
+pFunc PyInput::GetFunc(std::string name, int &err) const {
   PyObject *io = GetVarObject(name, err);
   if (err != 0) {
     return pFunc();
-  }
-  if (err == 0) {
+  } else {
     if (!PyFunction_Check(io)) {
       std::cerr << name << " must be function." << std::endl;
       err = VAR_MUST_FUNCTION;
@@ -140,7 +139,7 @@ pFunc pyinput::GetFunc(std::string name, int &err) const {
   }
 }
 
-PyObject *pyinput::GetVarObject(std::string &name, int &err) const {
+PyObject *PyInput::GetVarObject(std::string &name, int &err) const {
   PyObject *io = PyDict_GetItemString(main_dict, name.c_str());
   if (io == NULL) {
     std::cerr << "Parameter " << name << " not found in the init-file."

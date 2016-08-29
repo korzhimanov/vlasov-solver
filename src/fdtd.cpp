@@ -16,7 +16,7 @@
 
 #include "include/mymath.h"
 
-FDTD::FDTD(const pyinput &in, Mesh *m, int &err)
+FDTD::FDTD(const PyInput &in, Mesh *m, int &err)
     : mesh(m), PML(512), MAX_SIGMA(100.), SOURCE(1) {
   exl = eyl = exr = eyr = hxl = hyl = hxr = hyr = 0.;
 

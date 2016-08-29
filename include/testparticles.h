@@ -29,7 +29,7 @@ class TestParticles {
                               // frame)
 
  public:
-  TestParticles(pyinput &, const double &theta, int &err);
+  TestParticles(PyInput &, const double &theta, int &err);
   virtual ~TestParticles();
   void AllocMemory();
   void InitParticles(Mesh *);

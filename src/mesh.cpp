@@ -14,7 +14,7 @@
 
 #include "include/mesh.h"
 
-Mesh::Mesh(const pyinput &in, int &err)
+Mesh::Mesh(const PyInput &in, int &err)
     : ppw(16),
       MAX_Z(32),
       MAX_T(32),

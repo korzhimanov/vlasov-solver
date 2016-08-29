@@ -21,7 +21,7 @@
 
 #include "include/errors.h"
 
-Solver::Solver(pyinput &in, Mesh *m, int &err) : mesh(m), halfn0dz(0.) {
+Solver::Solver(PyInput &in, Mesh *m, int &err) : mesh(m), halfn0dz(0.) {
   double THETA = 0.;
   in.Set("THETA", THETA, err);
   if (THETA < 0. || THETA >= M_PI / 2) {
@@ -42,7 +42,7 @@ Solver::~Solver() {
   delete particles;
 }
 
-int Solver::Init(pyinput *in, int *err) { return 0; }
+int Solver::Init(PyInput *in, int *err) { return 0; }
 
 /**
  * \todo Remove z

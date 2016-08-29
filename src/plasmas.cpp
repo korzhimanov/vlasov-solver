@@ -18,7 +18,7 @@
 
 #include "include/errors.h"
 
-Plasmas::Plasmas(const pyinput& in, Mesh* m, const double& theta, int& err)
+Plasmas::Plasmas(const PyInput &in, Mesh *m, const double &theta, int &err)
     : species_number(0),
       critical_concentration(1.),
       mean_initial_momentum(0.),

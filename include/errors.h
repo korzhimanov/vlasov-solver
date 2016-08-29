@@ -16,7 +16,7 @@
 #define INCLUDE_ERRORS_H_
 
 typedef enum {
-  // pyinput
+  // PyInput
   PYTHON_INITIALIZATION_FAILED,
   CANNOT_OPEN_INIT_FILE,
   VAR_NOT_FOUND,

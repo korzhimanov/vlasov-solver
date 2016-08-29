@@ -24,7 +24,7 @@
 
 PFC::PFC() {}
 
-PFC::PFC(int particle_type, const pyinput &in, Mesh *m, double *n0, double *p0,
+PFC::PFC(int particle_type, const PyInput &in, Mesh *m, double *n0, double *p0,
          int &err) {
   Init(particle_type, in, m, n0, p0, err);
 }
@@ -38,7 +38,7 @@ PFC::~PFC() {
   delete[] p2;
 }
 
-void PFC::Init(int particle_type, const pyinput &in, Mesh *m, double *n0,
+void PFC::Init(int particle_type, const PyInput &in, Mesh *m, double *n0,
                double *p0, int &err) {
   type = particle_type;
   mesh = m;

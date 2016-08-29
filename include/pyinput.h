@@ -7,7 +7,7 @@
 
 /**
  * \file pyinput.h
- * \brief The header file which defines pyinput class
+ * \brief The header file which defines PyInput class
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
  */
@@ -23,10 +23,10 @@
  * /class pFunc
  * The class for reading python script with input parameters
 */
-class pyinput {
+class PyInput {
  public:
-  pyinput(int &err);
-  virtual ~pyinput();
+  PyInput(int &err);
+  virtual ~PyInput();
 
   void ReadFile(std::string, int &err);
 

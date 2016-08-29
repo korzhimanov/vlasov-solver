@@ -19,7 +19,7 @@
 
 #include "include/errors.h"
 
-TestParticles::TestParticles(pyinput &in, const double &theta, int &err)
+TestParticles::TestParticles(PyInput &in, const double &theta, int &err)
     : particles_number(0),
       start_point(0),
       interval(1.),

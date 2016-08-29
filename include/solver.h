@@ -41,11 +41,11 @@ class Solver {
   double halfn0dz;
 
  public:
-  Solver(pyinput &, Mesh *, int &err);
+  Solver(PyInput &, Mesh *, int &err);
   virtual ~Solver();
 
   // ------initialisation-------------------------------------------------
-  int Init(pyinput *, int *);
+  int Init(PyInput *, int *);
 
   // ------calculations---------------------------------------------------
   inline void CalcTransFields() {

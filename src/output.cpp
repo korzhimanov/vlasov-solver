@@ -24,7 +24,7 @@
 #include "include/file_saving.h"
 #include "include/mymath.h"
 
-Output::Output(const pyinput &in, std::string dn, Solver *s, int &err)
+Output::Output(const PyInput &in, std::string dn, Solver *s, int &err)
     : save_format("gzip"),
       save_fields_format(""),
       save_concs_format(""),
@@ -130,7 +130,7 @@ Output::~Output() {
   if (energy_file) energy_file.close();
 }
 
-void Output::SetFormat(const pyinput &in, std::string name, std::string &var,
+void Output::SetFormat(const PyInput &in, std::string name, std::string &var,
                        int &err) {
   in.Set(name, var, err);
   if (err != 0) return;

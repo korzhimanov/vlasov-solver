@@ -38,7 +38,7 @@ class FDTD {
   pFunc *pulse_x, *pulse_y;
 
  public:
-  FDTD(const pyinput &, Mesh *, int &err);
+  FDTD(const PyInput &, Mesh *, int &err);
   virtual ~FDTD();
 
  private:

@@ -35,14 +35,14 @@ class PFC {
  public:
   // ------constructors---------------------------------------------------
   PFC();
-  PFC(int particle_type, const pyinput &in, Mesh *grid, double *n0, double *p0,
+  PFC(int particle_type, const PyInput &in, Mesh *grid, double *n0, double *p0,
       int &err);
   // ------destructor-----------------------------------------------------
   ~PFC();
 
   // ------initializing---------------------------------------------------
   // initializes all parameters, allocates memory and fills it with zeros
-  void Init(int particle_type, const pyinput &in, Mesh *grid, double *n0,
+  void Init(int particle_type, const PyInput &in, Mesh *grid, double *n0,
             double *p0, int &err);
   void AllocMemory();
   void SetDistribution();

@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 
   int err = 0;
 
-  pyinput in(err);
+  PyInput in(err);
   if (err) exit(err);
   std::cout << "Reading init-file " << init_file_name.str() << " ..."
             << std::endl;
