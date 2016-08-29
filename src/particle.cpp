@@ -38,7 +38,8 @@ Particle::Particle(double *position, double *momentum, double mass,
 }
 
 Particle::Particle(Particle *p) {
-    Particle(p->position, p->momentum, mass, charge)};
+  Particle(p->r, p->p, p->m, p->q);
+};
 
 Particle::~Particle() {
   delete[] r;

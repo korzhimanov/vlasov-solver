@@ -6,3 +6,4 @@ tags
 .clang-format
 *.gch
 .atom-build.yml
+*.o
