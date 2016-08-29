@@ -12,8 +12,8 @@
  * \copyright The MIT License (MIT)
  */
 
-#ifndef PFUNC_H
-#define PFUNC_H
+#ifndef INCLUDE_PFUNC_H_
+#define INCLUDE_PFUNC_H_
 
 #include <Python.h>
 
@@ -23,7 +23,7 @@
 */
 class pFunc {
  public:
-  pFunc(PyObject *);
+  explicit pFunc(PyObject *);
   pFunc(const pFunc &);
   virtual ~pFunc();
   double call(double);
@@ -34,4 +34,4 @@ class pFunc {
   PyObject *function;
 };
 
-#endif  // PFUNC_H
+#endif  // INCLUDE_PFUNC_H_

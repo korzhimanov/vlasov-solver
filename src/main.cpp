@@ -14,7 +14,6 @@
  * The file contains argument parser, timer, main cycle and basic logging.
  */
 
-//#include <cstdlib>
 #include <cstring>
 #include <ctime>
 
@@ -28,7 +27,7 @@
 #include "include/pyinput.h"
 #include "include/solver.h"
 
-double invcps = 1. / (double)CLOCKS_PER_SEC;
+const double invcps = 1. / static_cast<double>(CLOCKS_PER_SEC);
 double get_time() {
 #ifdef _OPENMP
   return omp_get_wtime();
@@ -48,13 +47,15 @@ int main(int argc, char **argv) {
 
   std::stringstream output_folder_name;
   time_t current_time = time(NULL);
-  struct tm *utc_time = gmtime(&current_time);
+  struct tm *utc_time = gmtime_r(&current_time, utc_time);
 
   output_folder_name << utc_time->tm_year + 1900 << "-";
-  output_folder_name << std::setfill('0') << std::setw(2);
-  output_folder_name << utc_time->tm_mon + 1 << "-" << utc_time->tm_mday
-                     << "UTC" << utc_time->tm_hour << ":" << utc_time->tm_min
-                     << ":" << utc_time->tm_sec;
+  output_folder_name << std::setfill('0');
+  output_folder_name << std::setw(2) << utc_time->tm_mon + 1 << "-"
+                     << std::setw(2) << utc_time->tm_mday << "UTC"
+                     << std::setw(2) << utc_time->tm_hour << ":" << std::setw(2)
+                     << utc_time->tm_min << ":" << std::setw(2)
+                     << utc_time->tm_sec;
 
   if (argc > 1) {
     int i = 1;
@@ -135,7 +136,7 @@ int main(int argc, char **argv) {
             << std::setw(10) << "FieldGen" << std::setw(10) << "DstrFunc"
             << std::setw(10) << "Particles" << std::setw(10) << "SvFields"
             << std::setw(10) << "SvConcs" << std::setw(10) << "SvDstr"
-            << std::setw(10) << "SvPrtData" << std::setw(10) << "Energy"
+            << std::setw(10) << "SvPrtData " << std::setw(10) << " Energy "
             << std::setw(10) << "Step" << std::setw(20) << "Passed/ Estimated"
             << std::endl;
 
@@ -152,7 +153,7 @@ int main(int argc, char **argv) {
 
     // TransField
     t1 = t2;
-    S.fdtd->CalcSources((double)k * mesh.dt);
+    S.fdtd->CalcSources(static_cast<double>(k) * mesh.dt);
     S.CalcTransFields();
     t2 = get_time();
     std::cout << std::setw(11) << (t2 - t1);

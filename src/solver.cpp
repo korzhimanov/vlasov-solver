@@ -18,7 +18,7 @@
 
 #include <cmath>
 
-Solver::Solver(pyinput* in, Mesh* m, int* err) : mesh(m) {
+Solver::Solver(pyinput *in, Mesh *m, int *err) : mesh(m) {
   plasmas = new Plasmas(in, m, err);
   fdtd = new FDTD(in, m, err);
   particles = new TestParticles(in, err);
@@ -31,7 +31,7 @@ Solver::~Solver() {
   delete particles;
 }
 
-int Solver::Init(pyinput* in, int* err) {
+int Solver::Init(pyinput *in, int *err) {
   double THETA = 0.;
   THETA = in->GetDouble("THETA");
   if (THETA >= 0. && THETA < M_PI / 2) {
@@ -46,20 +46,22 @@ int Solver::Init(pyinput* in, int* err) {
  * \todo Remove z
  */
 void Solver::MoveParticles() {
-  double* E = new double[3];
-  double* B = new double[3];
+  double *E = new double[3];
+  double *B = new double[3];
   B[2] = 0;
   for (int i = 0; i < particles->particles_number; i++) {
-    int z = int(floor(particles->prt[i].r[2] / mesh->dz));
-    if (z < 0 || z >= mesh->MAX_Z) continue;
+    int z = static_cast<int>(floor(particles->prt[i].r[2] / mesh->dz));
+    if (z < 0 || z >= mesh->MAX_Z)
+      continue;
     double dz = particles->prt[i].r[2] / mesh->dz -
                 floor(particles->prt[i].r[2] / mesh->dz);
 
     E[0] = (1. - dz) * fdtd->ex[z] + dz * fdtd->ex[z + 1];
     E[1] = (1. - dz) * fdtd->ey[z] + dz * fdtd->ey[z + 1];
 
-    z = int(floor(particles->prt[i].r[2] / mesh->dz - 0.5));
-    if (z < 0 || z >= mesh->MAX_Z - 1) continue;
+    z = static_cast<int>(floor(particles->prt[i].r[2] / mesh->dz - 0.5));
+    if (z < 0 || z >= mesh->MAX_Z - 1)
+      continue;
     dz = particles->prt[i].r[2] / mesh->dz -
          floor(particles->prt[i].r[2] / mesh->dz);
 

@@ -18,7 +18,7 @@
 
 FDTD::FDTD() { exl = eyl = exr = eyr = hxl = hyl = hxr = hyr = 0.; }
 
-FDTD::FDTD(pyinput* in, Mesh* m, int* err)
+FDTD::FDTD(pyinput *in, Mesh *m, int *err)
     : mesh(m), PML(512), MAX_SIGMA(100.), SOURCE(1) {
   exl = eyl = exr = eyr = hxl = hyl = hxr = hyr = 0.;
   *err = Init(in);
@@ -36,13 +36,16 @@ FDTD::~FDTD() {
   delete[] r1;
 }
 
-int FDTD::Init(pyinput* in) {
+int FDTD::Init(pyinput *in) {
   pulse_x = new pFunc(in->GetFunc("PULSE_X"));
   pulse_y = new pFunc(in->GetFunc("PULSE_Y"));
-  if (!in->SetPositive("source", &SOURCE)) return 300;
+  if (!in->SetPositive("source", &SOURCE))
+    return 300;
 
-  if (!in->SetPositive("PML", &PML)) return 310;
-  if (!in->SetPositive("PML_MAX_SIGMA", &MAX_SIGMA)) return 320;
+  if (!in->SetPositive("PML", &PML))
+    return 310;
+  if (!in->SetPositive("PML_MAX_SIGMA", &MAX_SIGMA))
+    return 320;
 
   return 0;
 }
@@ -115,7 +118,8 @@ void FDTD::Maxwell() {
 
 void FDTD::CalcPMLCoeff() {
   for (int j = 0; j < 2 * PML; j++) {
-    double sigma = MAX_SIGMA * mymath::sqr(double(j + 1) / double(2 * PML));
+    double sigma = MAX_SIGMA * mymath::sqr(static_cast<double>(j + 1) /
+                                           static_cast<double>(2 * PML));
     r[j] = exp(-sigma * mesh->dt);
     r1[j] = (r[j] - 1.) / (sigma * mesh->dz);
   }

@@ -14,8 +14,8 @@
  * some problems with compilation.
  */
 
-#ifndef SOLVER_H
-#define SOLVER_H
+#ifndef INCLUDE_SOLVER_H_
+#define INCLUDE_SOLVER_H_
 
 #include "include/fdtd.h"
 #include "include/mesh.h"
@@ -41,15 +41,15 @@ class Solver {
   double halfn0dz;
 
  public:
-  //------constructors---------------------------------------------------
+  // ------constructors---------------------------------------------------
   Solver(pyinput *, Mesh *, int *);
-  //------destructor-----------------------------------------------------
+  // ------destructor-----------------------------------------------------
   virtual ~Solver();
 
-  //------initialisation-------------------------------------------------
+  // ------initialisation-------------------------------------------------
   int Init(pyinput *, int *);
 
-  //------calculations---------------------------------------------------
+  // ------calculations---------------------------------------------------
   inline void CalcTransFields() {
     // evaluates vector potential
     for (int i = 0; i <= mesh->MAX_Z; i++) {
@@ -84,4 +84,4 @@ class Solver {
  private:
 };
 
-#endif  // SOLVER_H
+#endif  // INCLUDE_SOLVER_H_

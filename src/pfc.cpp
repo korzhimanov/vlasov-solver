@@ -14,10 +14,10 @@
 
 #include "include/pfc.h"
 
+#include <zlib.h>
+
 #include <iostream>
 #include <sstream>
-
-#include <zlib.h>
 
 #include "include/file_saving.h"
 #include "include/mymath.h"
@@ -51,17 +51,22 @@ int PFC::Init(int particle_type, pyinput *in, Mesh *m, double *n0, double *p0) {
   profile = new pFunc(in->GetFunc("PROFILE_" + type_string));
 
   MAX_P = 64;
-  if (!in->SetPositive("MAX_P_" + type_string, &MAX_P)) return 220;
+  if (!in->SetPositive("MAX_P_" + type_string, &MAX_P))
+    return 220;
   MASS = 1.;
-  if (!in->SetPositive("MASS_" + type_string, &MASS)) return 230;
+  if (!in->SetPositive("MASS_" + type_string, &MASS))
+    return 230;
   CHARGE = 1.;
-  if (!in->Set("CHARGE_" + type_string, &CHARGE)) return 240;
+  if (!in->Set("CHARGE_" + type_string, &CHARGE))
+    return 240;
   q_m = CHARGE / MASS;
   q2_m2 = CHARGE * CHARGE / (MASS * MASS);
   MEAN_P = 0.;
-  if (!in->Set("MEAN_P_" + type_string, &MEAN_P)) return 250;
+  if (!in->Set("MEAN_P_" + type_string, &MEAN_P))
+    return 250;
   dp = 0.01;
-  if (!in->SetPositive("dp_" + type_string, &dp)) return 260;
+  if (!in->SetPositive("dp_" + type_string, &dp))
+    return 260;
 
   if (fabs(MEAN_P) > 0.5 * MAX_P * dp)
     std::cout << "WARNING! Mean momentum of " << type
@@ -72,7 +77,8 @@ int PFC::Init(int particle_type, pyinput *in, Mesh *m, double *n0, double *p0) {
               << " particle type is less than momentum grid step." << std::endl;
 
   T_init = 0.02;
-  if (!in->SetPositive("T_init_" + type_string, &T_init)) return 270;
+  if (!in->SetPositive("T_init_" + type_string, &T_init))
+    return 270;
   if (T_init < 0.5 * dp * dp / MASS)
     std::cout << "WARNING! Temperature of " << type
               << " particle type cannot be resolved by momentum grid step."
@@ -178,24 +184,23 @@ void PFC::MakeStep(double *ez, double *ax, double *ay) {
                (q_m * ay[i + 1] + P0) * (q_m * ay[i + 1] + P0);
         for (j = 0; j < MAX_P; j++) {
           if (*(f1 + ii + j) > 1.e-14) {
-            vdt_dz = -qdt_mdp * ez[i] -
-                     q2dt_dzdp * (sqrt(1. + a2i1 + p2[j]) -
-                                  sqrt(1. + a2i + p2[j]));  // calculate the
-                                                            // relative velocity
-                                                            // in phase space
+            // calculate the relative velocity in phase space
+            vdt_dz =
+                -qdt_mdp * ez[i] -
+                q2dt_dzdp * (sqrt(1. + a2i1 + p2[j]) - sqrt(1. + a2i + p2[j]));
 
             new_cell = j;
             flux_part = 0.;
 
             if (vdt_dz > 0.) {
-              new_cell = j - 1 + (int)ceil(vdt_dz);
+              new_cell = j - 1 + static_cast<int>(ceil(vdt_dz));
               flux_part = vdt_dz - floor(vdt_dz);
               if (new_cell >= MAX_P - 1) {
                 new_cell = MAX_P - 1;
                 flux_part = 0.;
               }
             } else {
-              new_cell = j + (int)ceil(vdt_dz);
+              new_cell = j + static_cast<int>(ceil(vdt_dz));
               flux_part = vdt_dz - ceil(vdt_dz);
               if (new_cell <= 0) {
                 new_cell = 0;
@@ -217,7 +222,8 @@ void PFC::MakeStep(double *ez, double *ax, double *ay) {
 
               *(f2 + ii + new_cell) += *(f1 + ii + j) - fold;
 
-              if (new_cell != MAX_P - 1) *(f2 + ii + new_cell + 1) += fold;
+              if (new_cell != MAX_P - 1)
+                *(f2 + ii + new_cell + 1) += fold;
             } else {
               if (j != MAX_P - 1)
                 fold -= CorrectedRightSlope(f1 + ii + j, f1 + ii + j + 1) *
@@ -230,7 +236,8 @@ void PFC::MakeStep(double *ez, double *ax, double *ay) {
 
               *(f2 + ii + new_cell) += *(f1 + ii + j) + fold;
 
-              if (new_cell != 0) *(f2 + ii + new_cell - 1) -= fold;
+              if (new_cell != 0)
+                *(f2 + ii + new_cell - 1) -= fold;
             }
           }
         }
@@ -250,23 +257,22 @@ void PFC::MakeStep(double *ez, double *ax, double *ay) {
                (q_m * ay[i + 1] + P0) * (q_m * ay[i + 1] + P0);
         for (j = 0; j < MAX_P; j++) {
           if (*(f2 + ii + j) > 1.e-14) {
+            // calculate the relative velocity in phase space
             vdt_dz = 2. * mesh->dt_dz * p[j] /
-                     (sqrt(1. + a2i1 + p2[j]) +
-                      sqrt(1. + a2i + p2[j]));  // calculate the relative
-                                                // velocity in phase space
+                     (sqrt(1. + a2i1 + p2[j]) + sqrt(1. + a2i + p2[j]));
 
             new_cell = i;
             flux_part = 0.;
 
             if (vdt_dz > 0.) {
-              new_cell = i - 1 + (int)ceil(vdt_dz);
+              new_cell = i - 1 + static_cast<int>(ceil(vdt_dz));
               flux_part = vdt_dz - floor(vdt_dz);
               if (new_cell >= mesh->MAX_Z - 1) {
                 new_cell = mesh->MAX_Z - 1;
                 flux_part = 0.;
               }
             } else {
-              new_cell = i + (int)ceil(vdt_dz);
+              new_cell = i + static_cast<int>(ceil(vdt_dz));
               flux_part = vdt_dz - ceil(vdt_dz);
               if (new_cell <= 0) {
                 new_cell = 0;
@@ -301,7 +307,8 @@ void PFC::MakeStep(double *ez, double *ax, double *ay) {
 
               *(f1 + new_cell * MAX_P + j) += *(f2 + ii + j) + fold;
 
-              if (new_cell != 0) *(f1 + (new_cell - 1) * MAX_P + j) -= fold;
+              if (new_cell != 0)
+                *(f1 + (new_cell - 1) * MAX_P + j) -= fold;
             }
           }
         }
@@ -366,7 +373,8 @@ double PFC::KineticEnergy(double *ax, double *ay, int left_bound,
   else
     i2 = right_bound;
 
-  if (i2 < i1) return 0.;
+  if (i2 < i1)
+    return 0.;
 
   double energy = 0.;
   for (int i = i1; i < i2; i++) {
@@ -390,13 +398,13 @@ void PFC::SaveConcentrationTxt(std::string filename) {
 void PFC::SaveConcentrationBin(std::string filename) {
   std::ofstream out((filename + ".bin").c_str(),
                     std::ios_base::binary | std::ios_base::app);
-  out.write((char *)conc, mesh->MAX_Z * sizeof(double));
+  out.write(reinterpret_cast<char *>(conc), mesh->MAX_Z * sizeof(double));
   out.close();
 }
 
 void PFC::SaveConcentrationGZip(std::string filename) {
   gzFile out = gzopen((filename + ".gz").c_str(), "ab");
-  gzwrite(out, (char *)conc, mesh->MAX_Z * sizeof(double));
+  gzwrite(out, reinterpret_cast<char *>(conc), mesh->MAX_Z * sizeof(double));
   gzclose(out);
 }
 
@@ -406,13 +414,14 @@ void PFC::SaveDstrFunctionTxt(std::string filename) {
 
 void PFC::SaveDstrFunctionBin(std::string filename) {
   std::ofstream out((filename + ".bin").c_str(), std::ios_base::binary);
-  out.write((char *)f1, MAX_P * mesh->MAX_Z * sizeof(double));
+  out.write(reinterpret_cast<char *>(f1), MAX_P * mesh->MAX_Z * sizeof(double));
   out.close();
 }
 
 void PFC::SaveDstrFunctionGZip(std::string filename) {
   gzFile out = gzopen((filename + ".gz").c_str(), "wb");
-  gzwrite(out, (char *)f1, MAX_P * mesh->MAX_Z * sizeof(double));
+  gzwrite(out, reinterpret_cast<char *>(f1),
+          MAX_P * mesh->MAX_Z * sizeof(double));
   gzclose(out);
 }
 
@@ -422,7 +431,8 @@ void PFC::CalcConcDstr() {
 #pragma omp parallel for private(i, ii, j)
   for (i = 0; i < mesh->MAX_Z; i++) {
     ii = i * MAX_P;
-    for (j = 0; j < MAX_P; j++) conc[i] += *(f1 + ii + j);
+    for (j = 0; j < MAX_P; j++)
+      conc[i] += *(f1 + ii + j);
     conc[i] *= n0dp;
   }
 }

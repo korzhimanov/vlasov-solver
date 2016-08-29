@@ -22,6 +22,9 @@ Particle::Particle() {
   q = 1;
 }
 
+/**
+ * \todo change q to double
+ */
 Particle::Particle(double *position, double *momentum, double mass,
                    double charge) {
   r = new double[3];
@@ -31,7 +34,7 @@ Particle::Particle(double *position, double *momentum, double mass,
     p[i] = momentum[i];
   }
   m = mass;
-  q = int(charge);
+  q = static_cast<int>(charge);
 }
 
 Particle::~Particle() {
@@ -40,11 +43,13 @@ Particle::~Particle() {
 }
 
 void Particle::SetPosition(double *position) {
-  for (int i = 0; i < 3; i++) r[i] = position[i];
+  for (int i = 0; i < 3; i++)
+    r[i] = position[i];
 }
 
 void Particle::SetMomentum(double *momentum) {
-  for (int i = 0; i < 3; i++) p[i] = momentum[i];
+  for (int i = 0; i < 3; i++)
+    p[i] = momentum[i];
 }
 
 double Particle::GetGamma() {
@@ -62,15 +67,15 @@ void Particle::MakeStep(double dt, double *E, double *B) {
      * \todo Introduce constant q_m instead of q/m.
      */
     switch (i) {
-      case 0:
-        F += (p[1] * B[2] - p[2] * B[1]) / gamma;
-        break;
-      case 1:
-        F += (p[2] * B[0] - p[0] * B[2]) / gamma;
-        break;
-      case 2:
-        F += (p[0] * B[1] - p[1] * B[0]) / gamma;
-        break;
+    case 0:
+      F += (p[1] * B[2] - p[2] * B[1]) / gamma;
+      break;
+    case 1:
+      F += (p[2] * B[0] - p[0] * B[2]) / gamma;
+      break;
+    case 2:
+      F += (p[0] * B[1] - p[1] * B[0]) / gamma;
+      break;
     }
     F *= -q / m;
     r[i] += (p[i] / (gamma * m) + .5 * F * dt) * dt;

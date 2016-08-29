@@ -13,8 +13,8 @@
  * \todo Change Charge to double
  */
 
-#ifndef PARTICLE_H
-#define PARTICLE_H
+#ifndef INCLUDE_PARTICLE_H_
+#define INCLUDE_PARTICLE_H_
 
 /**
  * /class Particle
@@ -37,4 +37,4 @@ class Particle {
   double m;   // mass
 };
 
-#endif  // PARTICLE_H
+#endif  // INCLUDE_PARTICLE_H_

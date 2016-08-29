@@ -12,8 +12,8 @@
  * \copyright The MIT License (MIT)
  */
 
-#ifndef FDTD_H
-#define FDTD_H
+#ifndef INCLUDE_FDTD_H_
+#define INCLUDE_FDTD_H_
 
 #include "include/mesh.h"
 #include "include/pfunc.h"
@@ -37,20 +37,18 @@ class FDTD {
   pFunc *pulse_x, *pulse_y;
 
  public:
-  //------constructors---------------------------------------------------
   FDTD();
   FDTD(pyinput *, Mesh *, int *);
-  //------destructor-----------------------------------------------------
   virtual ~FDTD();
 
-  //------initialization-------------------------------------------------
+  // -----initialization-------------------------------------------------
   // initializes all but PML parameters, allocates memory for fields and puts
   // all of them equal to zero
   int Init(pyinput *);
   // allocates memory for fields and puts all of them equal to zero
   void AllocMemory();
 
-  //------solver---------------------------------------------------------
+  // -----solver---------------------------------------------------------
   // solves Maxwell equations
   void Maxwell();
 
@@ -58,13 +56,13 @@ class FDTD {
    * \todo Change .5*mesh->dz and .5*mesh->dt to constants
    */
   inline void CalcSources(double t) {
-    exl = pulse_x->call((double)(t - .5 * mesh->dz));
-    eyl = pulse_y->call((double)(t - .5 * mesh->dz));
-    hxl = -pulse_y->call((double)(t + .5 * mesh->dt));
-    hyl = pulse_x->call((double)(t + .5 * mesh->dt));
+    exl = pulse_x->call(t - .5 * mesh->dz);
+    eyl = pulse_y->call(t - .5 * mesh->dz);
+    hxl = -pulse_y->call(t + .5 * mesh->dt);
+    hyl = pulse_x->call(t + .5 * mesh->dt);
   }
 
-  //------informative functions------------------------------------------
+  // -----informative functions------------------------------------------
   // calculates flux in x-direction at 'cell'
   inline double Flux(int cell) {
     return 0.5 * (ex[cell] * (hy[cell] + hy[cell - 1]) -
@@ -93,9 +91,9 @@ class FDTD {
   }
 
  private:
-  //------miscellaneous--------------------------------------------------
+  // -----miscellaneous--------------------------------------------------
   // calculates PML absorption coefficients
   void CalcPMLCoeff();
 };
 
-#endif  // FDTD_H
+#endif  // INCLUDE_FDTD_H_

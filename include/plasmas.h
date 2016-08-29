@@ -12,8 +12,8 @@
  * \copyright The MIT License (MIT)
  */
 
-#ifndef PLASMAS_H
-#define PLASMAS_H
+#ifndef INCLUDE_PLASMAS_H_
+#define INCLUDE_PLASMAS_H_
 
 #include "include/mesh.h"
 #include "include/mymath.h"
@@ -59,9 +59,8 @@ inline void Plasmas::CalcLongFields() {
 
   ez[0] += 0.5 * critical_concentration * mesh->dz * fixed_ions_conc[0];
   for (int i = 1; i < mesh->MAX_Z; i++)
-    ez[i] += ez[i - 1] +
-             0.5 * critical_concentration * mesh->dz *
-                 (fixed_ions_conc[i] + fixed_ions_conc[i - 1]);
+    ez[i] += ez[i - 1] + 0.5 * critical_concentration * mesh->dz *
+                             (fixed_ions_conc[i] + fixed_ions_conc[i - 1]);
   ez[mesh->MAX_Z] += 0.5 * critical_concentration * mesh->dz *
                      fixed_ions_conc[mesh->MAX_Z - 1];
 }
@@ -70,4 +69,4 @@ inline void Plasmas::CalcDstrFunc() {
   for (int sp = 0; sp < species_number; sp++) pfc[sp].MakeStep(ez, ax, ay);
 }
 
-#endif  // PLASMAS_H
+#endif  // INCLUDE_PLASMAS_H_

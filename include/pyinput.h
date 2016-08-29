@@ -12,11 +12,12 @@
  * \copyright The MIT License (MIT)
  */
 
-#ifndef PYINPUT_H
-#define PYINPUT_H
+#ifndef INCLUDE_PYINPUT_H_
+#define INCLUDE_PYINPUT_H_
 
-#include "pfunc.h"
 #include <string>
+
+#include "include/pfunc.h"
 
 /**
  * /class pFunc
@@ -46,4 +47,4 @@ class pyinput {
   PyObject *main_module, *main_dict;
 };
 
-#endif  // PYINPUT_H
+#endif  // INCLUDE_PYINPUT_H_

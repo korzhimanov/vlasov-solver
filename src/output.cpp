@@ -23,18 +23,10 @@
 #include "include/file_saving.h"
 #include "include/mymath.h"
 
-Output::Output(pyinput* in, std::string dn, Solver* s, int* err)
-    : save_fields(1),
-      save_concs(1),
-      save_dstr(0),
-      save_dt(1),
-      save_fields_dt(0),
-      save_concs_dt(0),
-      save_dstr_dt(0),
-      save_format("gzip"),
-      save_fields_format(""),
-      save_concs_format(""),
-      save_dstr_format(""),
+Output::Output(pyinput *in, std::string dn, Solver *s, int *err)
+    : save_fields(1), save_concs(1), save_dstr(0), save_dt(1),
+      save_fields_dt(0), save_concs_dt(0), save_dstr_dt(0), save_format("gzip"),
+      save_fields_format(""), save_concs_format(""), save_dstr_format(""),
       solver(s) {
   *err = Init(in, &dn);
   CreateDirs();
@@ -43,10 +35,11 @@ Output::Output(pyinput* in, std::string dn, Solver* s, int* err)
 }
 
 Output::~Output() {
-  if (energy_file) energy_file.close();
+  if (energy_file)
+    energy_file.close();
 }
 
-int Output::Init(pyinput* in, std::string* dn) {
+int Output::Init(pyinput *in, std::string *dn) {
   output_directory_name = *dn + "/";
 
   save_fields = in->GetInt("save_fields");
@@ -54,36 +47,48 @@ int Output::Init(pyinput* in, std::string* dn) {
   save_dstr = in->GetInt("save_dstr");
 
   if ((save_fields || save_concs || save_dstr) == true) {
-    if (!in->SetPositive("save_dt", &save_dt)) return 1010;
+    if (!in->SetPositive("save_dt", &save_dt))
+      return 1010;
     save_format = "txt";
-    if (!SetFormat(in, "save_format", &(save_format))) return 1020;
+    if (!SetFormat(in, "save_format", &(save_format)))
+      return 1020;
 
     if (save_fields == true) {
-      if (!in->SetNotNegative("save_fields_dt", &save_fields_dt)) return 1030;
-      if (save_fields_dt == 0) save_fields_dt = save_dt;
+      if (!in->SetNotNegative("save_fields_dt", &save_fields_dt))
+        return 1030;
+      if (save_fields_dt == 0)
+        save_fields_dt = save_dt;
       if (!SetFormat(in, "save_fields_format", &(save_fields_format)))
         return 1031;
-      if (save_fields_format == "") save_fields_format = save_format;
+      if (save_fields_format == "")
+        save_fields_format = save_format;
     }
     if (save_concs == true) {
-      if (!in->SetNotNegative("save_concs_dt", &save_concs_dt)) return 1040;
-      if (save_concs_dt == 0) save_concs_dt = save_dt;
+      if (!in->SetNotNegative("save_concs_dt", &save_concs_dt))
+        return 1040;
+      if (save_concs_dt == 0)
+        save_concs_dt = save_dt;
       if (!SetFormat(in, "save_concs_format", &(save_concs_format)))
         return 1041;
-      if (save_concs_format == "") save_concs_format = save_format;
+      if (save_concs_format == "")
+        save_concs_format = save_format;
     }
     if (save_dstr == true) {
-      if (!in->SetNotNegative("save_dstr_dt", &save_dstr_dt)) return 1050;
-      if (save_dstr_dt == 0) save_dstr_dt = save_dt;
-      if (!SetFormat(in, "save_dstr_format", &(save_dstr_format))) return 1051;
-      if (save_dstr_format == "") save_dstr_format = save_format;
+      if (!in->SetNotNegative("save_dstr_dt", &save_dstr_dt))
+        return 1050;
+      if (save_dstr_dt == 0)
+        save_dstr_dt = save_dt;
+      if (!SetFormat(in, "save_dstr_format", &(save_dstr_format)))
+        return 1051;
+      if (save_dstr_format == "")
+        save_dstr_format = save_format;
     }
   }
 
   return 0;
 }
 
-bool Output::SetFormat(pyinput* in, std::string name, std::string* var) {
+bool Output::SetFormat(pyinput *in, std::string name, std::string *var) {
   *var = in->GetString(name);
   if (save_format == "txt" || save_format == "bin" || save_format == "gzip")
     return true;
@@ -103,12 +108,13 @@ void Output::CreateDirs() {
   }
 
   // creating directories for storing distribution functions in files
-  if (save_dstr == true)
+  if (save_dstr == true) {
     for (int sp = 0; sp < solver->plasmas->species_number; sp++) {
       std::ostringstream ss;
       ss << output_directory_name << "dstr_func" << sp << "/";
       filesaving::create_dir(ss.str());
     }
+  }
 }
 
 void Output::SaveInput(std::string fn) {
@@ -122,7 +128,8 @@ void Output::SaveInput(std::string fn) {
   fs << "\tSpace step = " << .5 * M_1_PI * solver->mesh->dz << " Wavelengths\n";
   fs << "\tTotal space cells = " << solver->mesh->MAX_Z << "\n";
   fs << "\tTotal space size = "
-     << (double)solver->mesh->MAX_Z / solver->mesh->ppw << " Wavelengths\n";
+     << static_cast<double>(solver->mesh->MAX_Z) / solver->mesh->ppw
+     << "Wavelengths\n";
   fs << "\tTime step = " << .5 * M_1_PI * solver->mesh->dt << " Waveperiods\n";
   fs << "\tTotal time steps = " << solver->mesh->MAX_T << "\n";
   fs << "\tTotal running time = "
@@ -142,11 +149,12 @@ void Output::SaveInput(std::string fn) {
     fs << "\tMass of particles = " << solver->particles->mass << "\n";
     fs << "\tCharge of particles = " << solver->particles->charge << "\n";
     fs << "\tParticles are equidistantly deposited from "
-       << (float)solver->particles->start_point / solver->mesh->ppw;
+       << static_cast<double>(solver->particles->start_point) /
+              solver->mesh->ppw;
     fs << " to "
-       << (float)(solver->particles->start_point +
-                  solver->particles->interval *
-                      solver->particles->particles_number) /
+       << static_cast<double>(solver->particles->start_point +
+                              solver->particles->interval *
+                                  solver->particles->particles_number) /
               solver->mesh->ppw
        << " Wavelengths\n";
   }
@@ -155,7 +163,8 @@ void Output::SaveInput(std::string fn) {
   fs << "\tFields are ";
   if (save_fields == true) {
     fs << "being saved every " << save_fields_dt << " steps";
-    fs << " or every " << (double)save_fields_dt / solver->mesh->ppw
+    fs << " or every "
+       << static_cast<double>(save_fields_dt) / solver->mesh->ppw
        << " Waveperiods in files";
     fs << " in " << save_fields_format << "-format\n";
   } else
@@ -163,7 +172,7 @@ void Output::SaveInput(std::string fn) {
   fs << "\tConcentration distributions are ";
   if (save_concs == true) {
     fs << "being saved every " << save_concs_dt << " steps";
-    fs << " or every " << (double)save_concs_dt / solver->mesh->ppw
+    fs << " or every " << static_cast<double>(save_concs_dt) / solver->mesh->ppw
        << " Waveperiods in files";
     fs << " in " << save_concs_format << "-format\n";
   } else
@@ -171,7 +180,7 @@ void Output::SaveInput(std::string fn) {
   fs << "\tDistribution functions are ";
   if (save_dstr == true) {
     fs << "being saved every " << save_dstr_dt << " steps";
-    fs << " or every " << (double)save_dstr_dt / solver->mesh->ppw
+    fs << " or every " << static_cast<double>(save_dstr_dt) / solver->mesh->ppw
        << " Waveperiods in files";
     fs << " in " << save_dstr_format << "-format";
   } else
@@ -267,7 +276,7 @@ void Output::SaveDstrFunc(int k) {
 void Output::SavePrtData(int k) {
   if (solver->particles->particles_number > 0) {
     for (int i = 0; i < solver->particles->particles_number; i++) {
-      std::ofstream* out_file;
+      std::ofstream *out_file;
       std::stringstream file_path;
       file_path << output_directory_name << "particles/particle"
                 << std::setfill('0') << std::setw(6) << i << ".txt";

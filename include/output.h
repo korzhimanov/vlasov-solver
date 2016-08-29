@@ -14,14 +14,14 @@
  * The file contains argument parser, timer, main cycle and basic logging.
  */
 
-#ifndef OUTPUT_H
-#define OUTPUT_H
+#ifndef INCLUDE_OUTPUT_H_
+#define INCLUDE_OUTPUT_H_
 
 #include <fstream>
 #include <string>
 
-#include "pyinput.h"
-#include "solver.h"
+#include "include/pyinput.h"
+#include "include/solver.h"
 
 class Output {
  public:
@@ -33,10 +33,10 @@ class Output {
   std::ofstream energy_file;
 
  private:
-  Solver* solver;
+  Solver *solver;
 
  public:
-  Output(pyinput*, std::string, Solver*, int*);
+  Output(pyinput *, std::string, Solver *, int *);
   virtual ~Output();
 
   // saving data
@@ -48,11 +48,11 @@ class Output {
   void WriteEnergy(int);
 
  private:
-  int Init(pyinput*, std::string*);
+  int Init(pyinput *, std::string *);
   void CreateDirs();
   void SaveInput(std::string);
   void InitEnergyFile(std::string);
-  bool SetFormat(pyinput* in, std::string name, std::string* var);
+  bool SetFormat(pyinput *in, std::string name, std::string *var);
 };
 
-#endif  // OUTPUT_H
+#endif  // INCLUDE_OUTPUT_H_

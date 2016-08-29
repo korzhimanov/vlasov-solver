@@ -12,8 +12,8 @@
  * \copyright The MIT License (MIT)
  */
 
-#ifndef TESTPARTICLES_H
-#define TESTPARTICLES_H
+#ifndef INCLUDE_TESTPARTICLES_H_
+#define INCLUDE_TESTPARTICLES_H_
 
 #include "include/mesh.h"
 #include "include/particle.h"
@@ -36,4 +36,4 @@ class TestParticles {
   void InitParticles(Mesh *);
 };
 
-#endif  // TESTPARTICLES_H
+#endif  // INCLUDE_TESTPARTICLES_H_

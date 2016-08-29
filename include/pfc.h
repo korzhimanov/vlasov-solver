@@ -12,8 +12,8 @@
  * \copyright The MIT License (MIT)
  */
 
-#ifndef PFC_H
-#define PFC_H
+#ifndef INCLUDE_PFC_H_
+#define INCLUDE_PFC_H_
 
 #include <fstream>
 #include <string>
@@ -33,20 +33,20 @@
 */
 class PFC {
  public:
-  //------constructors---------------------------------------------------
+  // ------constructors---------------------------------------------------
   PFC();
   PFC(int particle_type, pyinput *in, Mesh *grid, double *n0, double *p0,
       int *err);
-  //------destructor-----------------------------------------------------
+  // ------destructor-----------------------------------------------------
   ~PFC();
 
-  //------initializing---------------------------------------------------
+  // ------initializing---------------------------------------------------
   // initializes all parameters, allocates memory and fills it with zeros
   int Init(int particle_type, pyinput *in, Mesh *grid, double *n0, double *p0);
   void AllocMemory();
   void SetDistribution();
 
-  //------solver---------------------------------------------------------
+  // ------solver---------------------------------------------------------
   // makes step
   void MakeStep(double *ez, double *ax, double *ay);
   // calculates longitudinal field
@@ -59,8 +59,8 @@ class PFC {
   double CorrectedLeftSlope(double *centralvalue, double *leftvalue);
   double CorrectedRightSlope(double *centralvalue, double *rightvalue);
 
-  //------informative functions------------------------------------------
  public:
+  // ------informative functions------------------------------------------
   // saves input information
   void SaveInput(std::ofstream &);
   // saves output information
@@ -75,7 +75,7 @@ class PFC {
   double KineticEnergy(double *ax, double *ay, int left_bound, int right_bound);
 
  private:
-  //------miscellaneous--------------------------------------------------
+  // ------miscellaneous--------------------------------------------------
   void CalcConcDstr();
 
  private:
@@ -100,4 +100,4 @@ class PFC {
       q2dt_dzdp, *p, *p2;
   pFunc *profile;  // concentration profile function
 };
-#endif  // PFC_H
+#endif  // INCLUDE_PFC_H_

@@ -13,12 +13,14 @@
  * \copyright The MIT License (MIT)
  */
 
-#ifndef FILE_SAVING_H
-#define FILE_SAVING_H
+#ifndef INCLUDE_FILE_SAVING_H_
+#define INCLUDE_FILE_SAVING_H_
+
+#include <zlib.h>
 
 #include <cstdlib>
 #include <fstream>
-#include <zlib.h>
+#include <string>
 
 static std::ofstream fs;
 static gzFile gz;
@@ -72,7 +74,7 @@ void filesaving::save_file_1D_bin(Type *a, const int num,
                                   const std::string name) {
   fs.open(name.c_str(),
           std::ios_base::binary | std::ios_base::app | std::ios_base::out);
-  fs.write((char *)a, num * sizeof(Type));
+  fs.write(reinterpret_cast<char *>(a), num * sizeof(Type));
   fs.close();
 }
 
@@ -80,7 +82,7 @@ template <typename Type>
 void filesaving::save_file_1D_gzip(Type *a, const int num,
                                    const std::string name) {
   gz = gzopen(name.c_str(), "ab");
-  gzwrite(gz, (char *)a, num * sizeof(Type));
+  gzwrite(gz, reinterpret_cast<char *>(a), num * sizeof(Type));
   gzclose(gz);
 }
 
@@ -106,4 +108,4 @@ void filesaving::save_file_2D_txt(Type *a, const int columns, const int rows,
   fs.close();
 }
 
-#endif  // FILE_SAVING_H
+#endif  // INCLUDE_FILE_SAVING_H_

@@ -12,10 +12,10 @@
  * \copyright The MIT License (MIT)
  */
 
-#ifndef MESH_H
-#define MESH_H
+#ifndef INCLUDE_MESH_H_
+#define INCLUDE_MESH_H_
 
-#include "pyinput.h"
+#include "include/pyinput.h"
 
 /**
  * /class Mesh
@@ -28,8 +28,8 @@ class Mesh {
 
  public:
   Mesh();
-  Mesh(pyinput*, int*);
-  int Init(pyinput*);
+  Mesh(pyinput *, int *);
+  int Init(pyinput *);
 };
 
-#endif  // MESH_H
+#endif  // INCLUDE_MESH_H_
