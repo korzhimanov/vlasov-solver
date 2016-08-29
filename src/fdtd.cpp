@@ -16,10 +16,18 @@
 
 #include "include/mymath.h"
 
-FDTD::FDTD(pyinput *in, Mesh *m, int *err)
+FDTD::FDTD(const pyinput &in, Mesh *m, int &err)
     : mesh(m), PML(512), MAX_SIGMA(100.), SOURCE(1) {
   exl = eyl = exr = eyr = hxl = hyl = hxr = hyr = 0.;
-  *err = Init(in);
+
+  pulse_x = new pFunc(in.GetFunc("PULSE_X", err));
+  pulse_y = new pFunc(in.GetFunc("PULSE_Y", err));
+
+  in.SetPositive("source", SOURCE, err);
+
+  in.SetPositive("PML", PML, err);
+  in.SetPositive("PML_MAX_SIGMA", MAX_SIGMA, err);
+
   AllocMemory();
 }
 
@@ -32,17 +40,6 @@ FDTD::~FDTD() {
   delete pulse_y;
   delete[] r;
   delete[] r1;
-}
-
-int FDTD::Init(pyinput *in) {
-  pulse_x = new pFunc(in->GetFunc("PULSE_X"));
-  pulse_y = new pFunc(in->GetFunc("PULSE_Y"));
-  if (!in->SetPositive("source", &SOURCE)) return 300;
-
-  if (!in->SetPositive("PML", &PML)) return 310;
-  if (!in->SetPositive("PML_MAX_SIGMA", &MAX_SIGMA)) return 320;
-
-  return 0;
 }
 
 void FDTD::AllocMemory() {

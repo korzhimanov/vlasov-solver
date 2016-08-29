@@ -14,11 +14,15 @@
 
 #include "include/pfunc.h"
 
+pFunc::pFunc() {}
+
 pFunc::pFunc(PyObject* pObj) { function = pObj; }
 
 pFunc::pFunc(const pFunc& pfunc) { function = pfunc.function; }
 
-pFunc::~pFunc() { Py_DECREF(function); }
+pFunc::~pFunc() {
+  if (function != NULL) Py_DECREF(function);
+}
 
 double pFunc::call(double arg1) {
   PyObject* ArgsTuple = PyTuple_New(1);

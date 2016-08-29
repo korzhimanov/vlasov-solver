@@ -17,12 +17,23 @@
 #include "include/solver.h"
 
 #include <cmath>
+#include <iostream>
 
-Solver::Solver(pyinput *in, Mesh *m, int *err) : mesh(m), halfn0dz(0.) {
-  plasmas = new Plasmas(in, m, err);
+#include "include/errors.h"
+
+Solver::Solver(pyinput &in, Mesh *m, int &err) : mesh(m), halfn0dz(0.) {
+  double THETA = 0.;
+  in.Set("THETA", THETA, err);
+  if (THETA < 0. || THETA >= M_PI / 2) {
+    std::cerr << "THETA must be in the interval [0, pi/2)." << std::endl;
+    err = THETA_OUT_OF_RANGE;
+    return;
+  }
+
+  plasmas = new Plasmas(in, m, THETA, err);
+  halfn0dz = 0.5 * sin(THETA) * plasmas->critical_concentration * mesh->dz;
   fdtd = new FDTD(in, m, err);
-  particles = new TestParticles(in, err);
-  Init(in, err);
+  particles = new TestParticles(in, THETA, err);
 }
 
 Solver::~Solver() {
@@ -31,16 +42,7 @@ Solver::~Solver() {
   delete particles;
 }
 
-int Solver::Init(pyinput *in, int *err) {
-  double THETA = 0.;
-  THETA = in->GetDouble("THETA");
-  if (THETA >= 0. && THETA < M_PI / 2) {
-    halfn0dz = 0.5 * sin(THETA) * plasmas->critical_concentration * mesh->dz;
-  } else
-    return 10;
-
-  return 0;
-}
+int Solver::Init(pyinput *in, int *err) { return 0; }
 
 /**
  * \todo Remove z

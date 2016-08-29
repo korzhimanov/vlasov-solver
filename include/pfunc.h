@@ -23,6 +23,7 @@
 */
 class pFunc {
  public:
+  pFunc();
   explicit pFunc(PyObject *);
   pFunc(const pFunc &);
   virtual ~pFunc();

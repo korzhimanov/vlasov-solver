@@ -20,7 +20,7 @@ MAX_Z = 6*ppw # number of the steps for coordinate
 MAX_T = 10*ppw+1 # number of the steps for time
 dt = 2*PI/ppw # step size for time
 dz = 2*PI/ppw # step size for coordinate
-THETA = 0 #PI/4 # incident angle for laser pulse
+THETA = 0. #PI/4 # incident angle for laser pulse
 PML = ppw # number of cells devoted to PML
 PML_MAX_SIGMA = 100. # miximal absorption coefficient in the PML
 
@@ -29,8 +29,8 @@ PML_MAX_SIGMA = 100. # miximal absorption coefficient in the PML
 NUM_SP = 3 # number of species
 
 ## SPECIE 0
-MASS_0   =   1 # mass of the specie (relative to electron one)
-CHARGE_0 =   1 # charge of the specie (relative to electron one, i.e. electron charge equals to +1)
+MASS_0   =   1. # mass of the specie (relative to electron one)
+CHARGE_0 =   1. # charge of the specie (relative to electron one, i.e. electron charge equals to +1)
 MAX_P_0  = 20000 # number of the steps for momentum
 dp_0 = 0.01 # step size for momentum (relative to Mc)
 T_init_0 = 0.1/511 # initial temperature (relative to rest energy)
@@ -40,7 +40,7 @@ def PROFILE_0 (z):
 
 ## SPECIE 1
 MASS_1   = 55.8*1835.3 # mass of the specie (relative to electron one)
-CHARGE_1 = -24 # charge of the specie (relative to electron one, i.e. electron charge equals to +1)
+CHARGE_1 = -24. # charge of the specie (relative to electron one, i.e. electron charge equals to +1)
 MAX_P_1  = 2000 # number of the steps for momentum
 dp_1 = 0.002 # step size for momentum (relative to Mc)
 T_init_1 = 2e-5 # initial temperature (relative to rest energy)
@@ -50,7 +50,7 @@ def PROFILE_1 (z):
 
 ## SPECIE 2
 MASS_2   = 197*1835.3 # mass of the specie (relative to electron one)
-CHARGE_2 = -68 # charge of the specie (relative to electron one, i.e. electron charge equals to +1)
+CHARGE_2 = -68. # charge of the specie (relative to electron one, i.e. electron charge equals to +1)
 MAX_P_2  = 2000 # number of the steps for momentum
 dp_2 = 0.002 # step size for momentum (relative to Mc)
 T_init_2 = 2e-5 # initial temperature (relative to rest energy)
@@ -89,14 +89,14 @@ output_directory_name = str(foil)+'_'+str(position)+'_'+str(thickness) # name of
 save_format = 'gzip' # format of saving files (txt, bin, gzip)
 save_dt = ppw/16 # time interval of saving
 
-save_fields = 1 # if fields saving in files is needed
+save_fields = True # if fields saving in files is needed
 save_fields_format = '' # format of saving files
 save_fields_dt = 0 # time interval of saving
 
-save_concs = 1 # if concentrations saving in files is needed
+save_concs = True # if concentrations saving in files is needed
 save_concs_format = '' # format of saving files
 save_concs_dt = 0 # time interval of saving
 
-save_dstr = 1 # if distribution functions storing in file is needed
+save_dstr = True # if distribution functions storing in file is needed
 save_dstr_format = '' # format of saving files
 save_dstr_dt = MAX_T/2 # time interval of saving

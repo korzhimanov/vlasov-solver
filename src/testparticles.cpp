@@ -15,43 +15,33 @@
 
 #include "include/testparticles.h"
 
-TestParticles::TestParticles(pyinput *in, int *err)
-    : particles_number(0), start_point(0), interval(1.), mass(1.), charge(0.),
-      mean_initial_momentum(0.) {
-  *err = Init(in);
+#include <iostream>
+
+#include "include/errors.h"
+
+TestParticles::TestParticles(pyinput &in, const double &theta, int &err)
+    : particles_number(0),
+      start_point(0),
+      interval(1.),
+      mass(1.),
+      charge(0.),
+      mean_initial_momentum(tan(theta)) {
+  in.SetNotNegative("NUM_PRT", particles_number, err);
+
+  if (particles_number > 0) {
+    in.SetNotNegative("start_point", start_point, err);
+    in.SetPositive("interval", interval, err);
+    in.SetPositive("MASS_PRT", mass, err);
+    in.Set("CHARGE_PRT", charge, err);
+  }
 }
 
 TestParticles::~TestParticles() {
-  if (particles_number > 0)
-    delete[] prt;
-}
-
-int TestParticles::Init(pyinput *in) {
-  if (!in->SetNotNegative("NUM_PRT", &particles_number))
-    return 400;
-  if (particles_number > 0) {
-    if (!in->SetNotNegative("start_point", &start_point))
-      return 410;
-    if (!in->SetPositive("interval", &interval))
-      return 420;
-    if (!in->SetPositive("MASS_PRT", &mass))
-      return 430;
-    charge = in->GetDouble("CHARGE_PRT");
-  }
-
-  double THETA = 0.;
-  THETA = in->GetDouble("THETA");
-  if (THETA >= 0. && THETA < M_PI / 2) {
-    mean_initial_momentum = tan(THETA);
-  } else
-    return 440;
-
-  return 0;
+  if (particles_number > 0) delete[] prt;
 }
 
 void TestParticles::AllocMemory() {
-  if (particles_number > 0)
-    prt = new Particle[particles_number];
+  if (particles_number > 0) prt = new Particle[particles_number];
 }
 
 void TestParticles::InitParticles(Mesh *mesh) {

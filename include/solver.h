@@ -41,9 +41,7 @@ class Solver {
   double halfn0dz;
 
  public:
-  // ------constructors---------------------------------------------------
-  Solver(pyinput *, Mesh *, int *);
-  // ------destructor-----------------------------------------------------
+  Solver(pyinput &, Mesh *, int &err);
   virtual ~Solver();
 
   // ------initialisation-------------------------------------------------

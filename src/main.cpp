@@ -22,6 +22,7 @@
 #include <sstream>
 #include <string>
 
+#include "include/errors.h"
 #include "include/mesh.h"
 #include "include/output.h"
 #include "include/pyinput.h"
@@ -37,13 +38,12 @@ double get_time() {
 }
 
 void WrongArguments() {
-  std::cout << "Wrong arguments. Type -h for help." << std::endl;
+  std::cerr << "Wrong arguments. Type -h for help." << std::endl;
   exit(-1);
 }
 
 int main(int argc, char **argv) {
-  std::stringstream input_file_name;
-  input_file_name << "init/default.py";
+  std::stringstream init_file_name("init/default.py");
 
   std::stringstream output_folder_name;
   time_t current_time = time(NULL);
@@ -62,12 +62,12 @@ int main(int argc, char **argv) {
     do {
       if (!strcmp(argv[i], "-i")) {
         if (argc > i + 1) {
-          input_file_name.str(std::string());
-          input_file_name.clear();
-          input_file_name << argv[++i];
+          init_file_name.str(std::string());
+          init_file_name.clear();
+          init_file_name << argv[++i];
         } else
           WrongArguments();
-        std::cout << "Input file name has been setted to " << argv[i]
+        std::cout << "Init-file name has been setted to " << argv[i]
                   << std::endl;
         i++;
         continue;
@@ -101,32 +101,40 @@ int main(int argc, char **argv) {
 
   int err = 0;
 
-  pyinput in;
-  std::cout << "Reading input file " << input_file_name.str() << " ... "
+  pyinput in(err);
+  if (err) exit(err);
+  std::cout << "Reading init-file " << init_file_name.str() << " ..."
             << std::endl;
-  in.ReadFile(input_file_name.str());
+  in.ReadFile(init_file_name.str(), err);
+  if (err) {
+    std::cerr << "failed!\n Terminated!" << std::endl;
+    exit(err);
+  }
   std::cout << "done!" << std::endl;
 
-  Mesh mesh(&in, &err);
-  if (err != 0) {
-    std::cout << "Initialization failed! Returning code is " << err
-              << std::endl;
-    return err;
+  std::cout << "Initalizing mesh ..." << std::endl;
+  Mesh mesh(in, err);
+  if (err) {
+    std::cerr << "failed!\n Terminated!" << std::endl;
+    exit(err);
   }
+  std::cout << "done!" << std::endl;
 
-  Solver S(&in, &mesh, &err);
-  if (err != 0) {
-    std::cout << "Initialization failed! Returning code is " << err
-              << std::endl;
-    return err;
+  std::cout << "Initializing solver ..." << std::endl;
+  Solver S(in, &mesh, err);
+  if (err) {
+    std::cerr << "failed!\n Terminated!" << std::endl;
+    exit(err);
   }
+  std::cout << "done!" << std::endl;
 
-  Output output(&in, output_folder_name.str(), &S, &err);
-  if (err != 0) {
-    std::cout << "Initialization failed! Returning code is " << err
-              << std::endl;
-    return err;
+  std::cout << "Initializing output ..." << std::endl;
+  Output output(in, output_folder_name.str(), &S, err);
+  if (err) {
+    std::cerr << "failed!\n Terminated!" << std::endl;
+    exit(err);
   }
+  std::cout << "Initialization of output is done!" << std::endl;
 
   S.plasmas->InitDistribution();
   S.particles->InitParticles(&mesh);

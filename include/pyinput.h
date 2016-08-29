@@ -25,25 +25,25 @@
 */
 class pyinput {
  public:
-  pyinput();
+  pyinput(int &err);
   virtual ~pyinput();
 
-  void ReadFile(std::string);
+  void ReadFile(std::string, int &err);
 
-  int GetInt(std::string);
-  double GetDouble(std::string);
-  std::string GetString(std::string);
+  void Set(std::string name, int &var, int &err) const;
+  void Set(std::string name, double &var, int &err) const;
+  void Set(std::string name, bool &var, int &err) const;
+  void Set(std::string name, std::string &var, int &err) const;
+  void SetNotNegative(std::string name, int &var, int &err) const;
+  void SetPositive(std::string name, int &var, int &err) const;
+  void SetPositive(std::string name, double &var, int &err) const;
 
-  bool Set(std::string name, int *var);
-  bool Set(std::string name, double *var);
-  bool SetNotNegative(std::string name, int *var);
-  bool SetPositive(std::string name, int *var);
-  bool SetPositive(std::string name, double *var);
-
-  pFunc GetFunc(std::string);
+  pFunc GetFunc(std::string, int &err) const;
 
  private:
-  FILE *f;
+  PyObject *GetVarObject(std::string &, int &err) const;
+
+ private:
   PyObject *main_module, *main_dict;
 };
 

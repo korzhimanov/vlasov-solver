@@ -37,9 +37,8 @@ class Plasmas {
   double *ez;               // longitudinal field
 
  public:
-  Plasmas(pyinput *, Mesh *, int *);
+  Plasmas(const pyinput &, Mesh *, const double &theta, int &err);
   virtual ~Plasmas();
-  int Init(pyinput *);      // initializes plasma distribution
   void AllocMemory();       // allocates memory
   void InitDistribution();  // initializes distribution of plasmas
   void CalcLongFields();

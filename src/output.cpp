@@ -20,81 +20,125 @@
 #include <iostream>
 #include <sstream>
 
+#include "include/errors.h"
 #include "include/file_saving.h"
 #include "include/mymath.h"
 
-Output::Output(pyinput *in, std::string dn, Solver *s, int *err)
-    : save_fields(1), save_concs(1), save_dstr(0), save_dt(1),
-      save_fields_dt(0), save_concs_dt(0), save_dstr_dt(0), save_format("gzip"),
-      save_fields_format(""), save_concs_format(""), save_dstr_format(""),
+Output::Output(const pyinput &in, std::string dn, Solver *s, int &err)
+    : save_format("gzip"),
+      save_fields_format(""),
+      save_concs_format(""),
+      save_dstr_format(""),
       solver(s) {
-  *err = Init(in, &dn);
+  output_directory_name = dn + "/";
+
+  in.Set("save_fields", save_fields, err);
+  if (err == VAR_NOT_FOUND) {
+    std::cout << "Set save_fields to 'true'." << std::endl;
+    save_fields = true;
+    err = 0;
+  }
+  in.Set("save_concs", save_concs, err);
+  if (err == VAR_NOT_FOUND) {
+    std::cout << "Set save_concs to 'true'." << std::endl;
+    save_concs = true;
+    err = 0;
+  }
+  in.Set("save_dstr", save_dstr, err);
+  if (err == VAR_NOT_FOUND) {
+    std::cout << "Set save_dstr to 'false'." << std::endl;
+    save_dstr = false;
+    err = 0;
+  }
+
+  if ((save_fields || save_concs || save_dstr) == true) {
+    in.SetPositive("save_dt", save_dt, err);
+    if (err == VAR_NOT_FOUND) {
+      std::cout << "Set save_dt to '1'." << std::endl;
+      save_dt = 1;
+      err = 0;
+    }
+    SetFormat(in, "save_format", save_format, err);
+    if (err == VAR_NOT_FOUND) {
+      std::cout << "Set save_format to 'txt'." << std::endl;
+      save_format = "txt";
+      err = 0;
+    }
+    if (save_format == "") {
+      save_format = "txt";
+    }
+
+    if (save_fields == true) {
+      in.SetNotNegative("save_fields_dt", save_fields_dt, err);
+      if (err == VAR_NOT_FOUND) {
+        std::cout << "Set save_fields_dt to " << save_dt << "." << std::endl;
+        save_fields_dt = save_dt;
+        err = 0;
+      }
+      if (save_fields_dt == 0) save_fields_dt = save_dt;
+      SetFormat(in, "save_fields_format", save_fields_format, err);
+      if (err == VAR_NOT_FOUND) {
+        std::cout << "Set save_fields_format to " << save_format << "."
+                  << std::endl;
+        save_fields_format = save_format;
+        err = 0;
+      }
+      if (save_fields_format == "") save_fields_format = save_format;
+    }
+    if (save_concs == true) {
+      in.SetNotNegative("save_concs_dt", save_concs_dt, err);
+      if (err == VAR_NOT_FOUND) {
+        std::cout << "Set save_concs_dt to " << save_dt << "." << std::endl;
+        save_concs_dt = save_dt;
+        err = 0;
+      }
+      if (save_concs_dt == 0) save_concs_dt = save_dt;
+      SetFormat(in, "save_concs_format", save_concs_format, err);
+      if (err == VAR_NOT_FOUND) {
+        std::cout << "Set save_concs_format to " << save_format << "."
+                  << std::endl;
+        save_concs_format = save_format;
+        err = 0;
+      }
+      if (save_concs_format == "") save_concs_format = save_format;
+    }
+    if (save_dstr == true) {
+      in.SetNotNegative("save_dstr_dt", save_dstr_dt, err);
+      if (err == VAR_NOT_FOUND) {
+        std::cout << "Set save_dstr_dt to " << save_dt << "." << std::endl;
+        save_dstr_dt = save_dt;
+        err = 0;
+      }
+      if (save_dstr_dt == 0) save_dstr_dt = save_dt;
+      SetFormat(in, "save_dstr_format", save_dstr_format, err);
+      if (err == VAR_NOT_FOUND) {
+        std::cout << "Set save_dstr_format to " << save_format << "."
+                  << std::endl;
+        save_dstr_format = save_format;
+        err = 0;
+      }
+      if (save_dstr_format == "") save_dstr_format = save_format;
+    }
+  }
+
   CreateDirs();
   SaveInput("initial_parameters.txt");
   InitEnergyFile("energy.txt");
 }
 
 Output::~Output() {
-  if (energy_file)
-    energy_file.close();
+  if (energy_file) energy_file.close();
 }
 
-int Output::Init(pyinput *in, std::string *dn) {
-  output_directory_name = *dn + "/";
+void Output::SetFormat(const pyinput &in, std::string name, std::string &var,
+                       int &err) {
+  in.Set(name, var, err);
+  if (err != 0) return;
 
-  save_fields = in->GetInt("save_fields");
-  save_concs = in->GetInt("save_concs");
-  save_dstr = in->GetInt("save_dstr");
-
-  if ((save_fields || save_concs || save_dstr) == true) {
-    if (!in->SetPositive("save_dt", &save_dt))
-      return 1010;
-    save_format = "txt";
-    if (!SetFormat(in, "save_format", &(save_format)))
-      return 1020;
-
-    if (save_fields == true) {
-      if (!in->SetNotNegative("save_fields_dt", &save_fields_dt))
-        return 1030;
-      if (save_fields_dt == 0)
-        save_fields_dt = save_dt;
-      if (!SetFormat(in, "save_fields_format", &(save_fields_format)))
-        return 1031;
-      if (save_fields_format == "")
-        save_fields_format = save_format;
-    }
-    if (save_concs == true) {
-      if (!in->SetNotNegative("save_concs_dt", &save_concs_dt))
-        return 1040;
-      if (save_concs_dt == 0)
-        save_concs_dt = save_dt;
-      if (!SetFormat(in, "save_concs_format", &(save_concs_format)))
-        return 1041;
-      if (save_concs_format == "")
-        save_concs_format = save_format;
-    }
-    if (save_dstr == true) {
-      if (!in->SetNotNegative("save_dstr_dt", &save_dstr_dt))
-        return 1050;
-      if (save_dstr_dt == 0)
-        save_dstr_dt = save_dt;
-      if (!SetFormat(in, "save_dstr_format", &(save_dstr_format)))
-        return 1051;
-      if (save_dstr_format == "")
-        save_dstr_format = save_format;
-    }
-  }
-
-  return 0;
-}
-
-bool Output::SetFormat(pyinput *in, std::string name, std::string *var) {
-  *var = in->GetString(name);
-  if (save_format == "txt" || save_format == "bin" || save_format == "gzip")
-    return true;
-  else {
-    std::cout << name + " must be either 'txt', 'bin' or 'gzip'" << std::endl;
-    return false;
+  if (var != "" && var != "txt" && var != "bin" && var != "gzip") {
+    std::cout << name + " must be either '', 'txt', 'bin' or 'gzip'"
+              << std::endl;
+    err = WRONG_OUTPUT_FORMAT;
   }
 }
 
@@ -125,16 +169,14 @@ void Output::SaveInput(std::string fn) {
 
   fs << "GENERAL PARAMETERS\n\n";
   fs << "\tSpace cells per wavelength = " << solver->mesh->ppw << "\n";
-  fs << "\tSpace step = " << .5 * M_1_PI * solver->mesh->dz << " Wavelengths\n";
+  fs << "\tSpace step = " << .5 * M_1_PI *solver->mesh->dz << " Wavelengths\n";
   fs << "\tTotal space cells = " << solver->mesh->MAX_Z << "\n";
-  fs << "\tTotal space size = "
-     << static_cast<double>(solver->mesh->MAX_Z) / solver->mesh->ppw
-     << "Wavelengths\n";
-  fs << "\tTime step = " << .5 * M_1_PI * solver->mesh->dt << " Waveperiods\n";
+  fs << "\tTotal space size = " << static_cast<double>(solver->mesh->MAX_Z) /
+                                       solver->mesh->ppw << "Wavelengths\n";
+  fs << "\tTime step = " << .5 * M_1_PI *solver->mesh->dt << " Waveperiods\n";
   fs << "\tTotal time steps = " << solver->mesh->MAX_T << "\n";
   fs << "\tTotal running time = "
-     << .5 * M_1_PI * solver->mesh->MAX_T * solver->mesh->dt
-     << " Waveperiods\n";
+     << .5 * M_1_PI *solver->mesh->MAX_T *solver->mesh->dt << " Waveperiods\n";
 
   fs << "\nPLASMA PARAMETERS\n\n";
   for (int sp = 0; sp < solver->plasmas->species_number; sp++) {
@@ -155,17 +197,15 @@ void Output::SaveInput(std::string fn) {
        << static_cast<double>(solver->particles->start_point +
                               solver->particles->interval *
                                   solver->particles->particles_number) /
-              solver->mesh->ppw
-       << " Wavelengths\n";
+              solver->mesh->ppw << " Wavelengths\n";
   }
 
   fs << "\nOUTPUT PARAMETERS\n\n";
   fs << "\tFields are ";
   if (save_fields == true) {
     fs << "being saved every " << save_fields_dt << " steps";
-    fs << " or every "
-       << static_cast<double>(save_fields_dt) / solver->mesh->ppw
-       << " Waveperiods in files";
+    fs << " or every " << static_cast<double>(save_fields_dt) /
+                              solver->mesh->ppw << " Waveperiods in files";
     fs << " in " << save_fields_format << "-format\n";
   } else
     fs << "not being saved\n";

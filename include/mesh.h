@@ -27,9 +27,7 @@ class Mesh {
   double dz, dt, dt_dz;
 
  public:
-  Mesh();
-  Mesh(pyinput *, int *);
-  int Init(pyinput *);
+  Mesh(const pyinput &, int &err);
 };
 
 #endif  // INCLUDE_MESH_H_

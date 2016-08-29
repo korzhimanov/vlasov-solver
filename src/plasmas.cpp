@@ -14,12 +14,27 @@
 
 #include "include/plasmas.h"
 
-Plasmas::Plasmas(pyinput* in, Mesh* m, int* err)
+#include <iostream>
+
+#include "include/errors.h"
+
+Plasmas::Plasmas(const pyinput& in, Mesh* m, const double& theta, int& err)
     : species_number(0),
       critical_concentration(1.),
       mean_initial_momentum(0.),
       mesh(m) {
-  *err = Init(in);
+  fixed_ions_profile = new pFunc(in.GetFunc("FIXED_IONS_PROFILE", err));
+
+  in.SetNotNegative("NUM_SP", species_number, err);
+
+  critical_concentration = 1. / (cos(theta) * cos(theta) * cos(theta));
+  mean_initial_momentum = tan(theta);
+
+  pfc = new PFC[species_number];
+  for (int sp = 0; sp < species_number; sp++) {
+    pfc[sp].Init(sp, in, mesh, &critical_concentration, &mean_initial_momentum,
+                 err);
+  }
   AllocMemory();
 }
 
@@ -30,29 +45,6 @@ Plasmas::~Plasmas() {
   delete[] ax;
   delete[] ay;
   delete[] a2;
-}
-
-int Plasmas::Init(pyinput* in) {
-  fixed_ions_profile = new pFunc(in->GetFunc("FIXED_IONS_PROFILE"));
-
-  if (!in->SetNotNegative("NUM_SP", &species_number)) return 200;
-
-  double THETA = 0.;
-  THETA = in->GetDouble("THETA");
-  if (THETA >= 0. && THETA < M_PI / 2) {
-    mean_initial_momentum = tan(THETA);
-    critical_concentration = 1. / (cos(THETA) * cos(THETA) * cos(THETA));
-  } else
-    return 210;
-
-  pfc = new PFC[species_number];
-  for (int sp = 0; sp < species_number; sp++) {
-    int err = pfc[sp].Init(sp, in, mesh, &critical_concentration,
-                           &mean_initial_momentum);
-    if (err != 0) return err;
-  }
-
-  return 0;
 }
 
 void Plasmas::AllocMemory() {

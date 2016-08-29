@@ -36,7 +36,8 @@ class Output {
   Solver *solver;
 
  public:
-  Output(pyinput *, std::string, Solver *, int *);
+  Output(const pyinput &, std::string output_directory_name, Solver *,
+         int &err);
   virtual ~Output();
 
   // saving data
@@ -48,11 +49,11 @@ class Output {
   void WriteEnergy(int);
 
  private:
-  int Init(pyinput *, std::string *);
   void CreateDirs();
   void SaveInput(std::string);
   void InitEnergyFile(std::string);
-  bool SetFormat(pyinput *in, std::string name, std::string *var);
+  void SetFormat(const pyinput &, std::string save_format, std::string &var,
+                 int &err);
 };
 
 #endif  // INCLUDE_OUTPUT_H_

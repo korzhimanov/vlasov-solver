@@ -38,14 +38,11 @@ class FDTD {
   pFunc *pulse_x, *pulse_y;
 
  public:
-  FDTD(pyinput *, Mesh *, int *err);
+  FDTD(const pyinput &, Mesh *, int &err);
   virtual ~FDTD();
 
  private:
   // -----initialization-------------------------------------------------
-  // initializes all but PML parameters, allocates memory for fields and puts
-  // all of them equal to zero
-  int Init(pyinput *);
   // allocates memory for fields and puts all of them equal to zero
   void AllocMemory();
 
