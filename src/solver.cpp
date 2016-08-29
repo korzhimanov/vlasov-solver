@@ -18,7 +18,7 @@
 
 #include <cmath>
 
-Solver::Solver(pyinput *in, Mesh *m, int *err) : mesh(m) {
+Solver::Solver(pyinput *in, Mesh *m, int *err) : mesh(m), halfn0dz(0.) {
   plasmas = new Plasmas(in, m, err);
   fdtd = new FDTD(in, m, err);
   particles = new TestParticles(in, err);
@@ -51,8 +51,7 @@ void Solver::MoveParticles() {
   B[2] = 0;
   for (int i = 0; i < particles->particles_number; i++) {
     int z = static_cast<int>(floor(particles->prt[i].r[2] / mesh->dz));
-    if (z < 0 || z >= mesh->MAX_Z)
-      continue;
+    if (z < 0 || z >= mesh->MAX_Z) continue;
     double dz = particles->prt[i].r[2] / mesh->dz -
                 floor(particles->prt[i].r[2] / mesh->dz);
 
@@ -60,8 +59,7 @@ void Solver::MoveParticles() {
     E[1] = (1. - dz) * fdtd->ey[z] + dz * fdtd->ey[z + 1];
 
     z = static_cast<int>(floor(particles->prt[i].r[2] / mesh->dz - 0.5));
-    if (z < 0 || z >= mesh->MAX_Z - 1)
-      continue;
+    if (z < 0 || z >= mesh->MAX_Z - 1) continue;
     dz = particles->prt[i].r[2] / mesh->dz -
          floor(particles->prt[i].r[2] / mesh->dz);
 

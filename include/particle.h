@@ -25,6 +25,7 @@ class Particle {
  public:
   Particle();
   Particle(double *position, double *momentum, double mass, double charge);
+  Particle(Particle *);
   ~Particle();
   void SetPosition(double *position);
   void SetMomentum(double *momentum);

@@ -25,7 +25,8 @@
 */
 class FDTD {
  public:
-  double *ex, *ey, *hx, *hy;                      // fields
+  double *ex, *ey, *hx, *hy;  // fields
+ private:
   double exl, eyl, exr, eyr, hxl, hyl, hxr, hyr;  // field sources on boundaries
 
  private:
@@ -37,10 +38,10 @@ class FDTD {
   pFunc *pulse_x, *pulse_y;
 
  public:
-  FDTD();
-  FDTD(pyinput *, Mesh *, int *);
+  FDTD(pyinput *, Mesh *, int *err);
   virtual ~FDTD();
 
+ private:
   // -----initialization-------------------------------------------------
   // initializes all but PML parameters, allocates memory for fields and puts
   // all of them equal to zero
@@ -48,6 +49,7 @@ class FDTD {
   // allocates memory for fields and puts all of them equal to zero
   void AllocMemory();
 
+ public:
   // -----solver---------------------------------------------------------
   // solves Maxwell equations
   void Maxwell();

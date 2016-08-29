@@ -12,11 +12,9 @@
  * \copyright The MIT License (MIT)
  */
 
-#include "include/fdtd.h"
+#include "../include/fdtd.h"
 
 #include "include/mymath.h"
-
-FDTD::FDTD() { exl = eyl = exr = eyr = hxl = hyl = hxr = hyr = 0.; }
 
 FDTD::FDTD(pyinput *in, Mesh *m, int *err)
     : mesh(m), PML(512), MAX_SIGMA(100.), SOURCE(1) {
@@ -39,13 +37,10 @@ FDTD::~FDTD() {
 int FDTD::Init(pyinput *in) {
   pulse_x = new pFunc(in->GetFunc("PULSE_X"));
   pulse_y = new pFunc(in->GetFunc("PULSE_Y"));
-  if (!in->SetPositive("source", &SOURCE))
-    return 300;
+  if (!in->SetPositive("source", &SOURCE)) return 300;
 
-  if (!in->SetPositive("PML", &PML))
-    return 310;
-  if (!in->SetPositive("PML_MAX_SIGMA", &MAX_SIGMA))
-    return 320;
+  if (!in->SetPositive("PML", &PML)) return 310;
+  if (!in->SetPositive("PML_MAX_SIGMA", &MAX_SIGMA)) return 320;
 
   return 0;
 }
