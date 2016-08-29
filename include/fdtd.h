@@ -16,7 +16,7 @@
 #define INCLUDE_FDTD_H_
 
 #include "include/mesh.h"
-#include "include/pfunc.h"
+#include "include/pyfunc.h"
 #include "include/pyinput.h"
 
 /**
@@ -35,7 +35,7 @@ class FDTD {
   double MAX_SIGMA;  // maximal absorption coefficient in PML
   double *r, *r1;    // absorption coefficients in PML
   int SOURCE;        // the position of a source relative to PML layer
-  pFunc *pulse_x, *pulse_y;
+  PyFunc *pulse_x, *pulse_y;
 
  public:
   FDTD(const PyInput &, Mesh *, int &err);

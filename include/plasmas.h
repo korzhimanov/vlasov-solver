@@ -18,7 +18,7 @@
 #include "include/mesh.h"
 #include "include/mymath.h"
 #include "include/pfc.h"
-#include "include/pfunc.h"
+#include "include/pyfunc.h"
 #include "include/pyinput.h"
 
 class Plasmas {
@@ -30,7 +30,7 @@ class Plasmas {
       mean_initial_momentum;  // initial mean momentum along y-axis (useful for
                               // simulation of oblique irradiation in boosted
                               // frame)
-  pFunc *fixed_ions_profile;
+  PyFunc *fixed_ions_profile;
   double *fixed_ions_conc;  // concentration of fixed ions
   PFC *pfc;                 // PFC - class
   double *ax, *ay, *a2;     // vector potential

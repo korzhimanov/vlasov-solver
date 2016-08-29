@@ -20,8 +20,8 @@ FDTD::FDTD(const PyInput &in, Mesh *m, int &err)
     : mesh(m), PML(512), MAX_SIGMA(100.), SOURCE(1) {
   exl = eyl = exr = eyr = hxl = hyl = hxr = hyr = 0.;
 
-  pulse_x = new pFunc(in.GetFunc("PULSE_X", err));
-  pulse_y = new pFunc(in.GetFunc("PULSE_Y", err));
+  pulse_x = new PyFunc(in.GetFunc("PULSE_X", err));
+  pulse_y = new PyFunc(in.GetFunc("PULSE_Y", err));
 
   in.SetPositive("source", SOURCE, err);
 

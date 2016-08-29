@@ -17,10 +17,10 @@
 
 #include <string>
 
-#include "include/pfunc.h"
+#include "include/pyfunc.h"
 
 /**
- * /class pFunc
+ * /class PyFunc
  * The class for reading python script with input parameters
 */
 class PyInput {
@@ -38,7 +38,7 @@ class PyInput {
   void SetPositive(std::string name, int &var, int &err) const;
   void SetPositive(std::string name, double &var, int &err) const;
 
-  pFunc GetFunc(std::string, int &err) const;
+  PyFunc GetFunc(std::string, int &err) const;
 
  private:
   PyObject *GetVarObject(std::string &, int &err) const;

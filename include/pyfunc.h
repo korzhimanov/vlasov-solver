@@ -6,8 +6,8 @@
  */
 
 /**
- * \file pfunc.h
- * \brief The header file which defines pFunc class
+ * \file pyfunc.h
+ * \brief The header file which defines PyFunc class
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
  */
@@ -18,15 +18,15 @@
 #include <Python.h>
 
 /**
- * /class pFunc
+ * /class PyFunc
  * The class for using functions defined in python scripts
 */
-class pFunc {
+class PyFunc {
  public:
-  pFunc();
-  explicit pFunc(PyObject *);
-  pFunc(const pFunc &);
-  virtual ~pFunc();
+  PyFunc();
+  explicit PyFunc(PyObject *);
+  PyFunc(const PyFunc &);
+  virtual ~PyFunc();
   double call(double);
   double call(double, double);
   double call(double, double, double);

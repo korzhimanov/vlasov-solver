@@ -49,7 +49,7 @@ void PFC::Init(int particle_type, const PyInput &in, Mesh *m, double *n0,
   ss << type;
   std::string type_string(ss.str());
 
-  profile = new pFunc(in.GetFunc("PROFILE_" + type_string, err));
+  profile = new PyFunc(in.GetFunc("PROFILE_" + type_string, err));
 
   MAX_P = 64;
   in.SetPositive("MAX_P_" + type_string, MAX_P, err);

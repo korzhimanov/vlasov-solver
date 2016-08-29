@@ -23,7 +23,7 @@ Plasmas::Plasmas(const PyInput &in, Mesh *m, const double &theta, int &err)
       critical_concentration(1.),
       mean_initial_momentum(0.),
       mesh(m) {
-  fixed_ions_profile = new pFunc(in.GetFunc("FIXED_IONS_PROFILE", err));
+  fixed_ions_profile = new PyFunc(in.GetFunc("FIXED_IONS_PROFILE", err));
 
   in.SetNotNegative("NUM_SP", species_number, err);
 

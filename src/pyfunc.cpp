@@ -6,25 +6,25 @@
  */
 
 /**
- * \file pfunc.cpp
- * \brief The source file which implements the methods of the pFunc class
+ * \file pyfunc.cpp
+ * \brief The source file which implements the methods of the PyFunc class
  * \author Artem Korzhimanov
  * \copyright The MIT License (MIT)
  */
 
-#include "include/pfunc.h"
+#include "include/pyfunc.h"
 
-pFunc::pFunc() {}
+PyFunc::PyFunc() {}
 
-pFunc::pFunc(PyObject* pObj) { function = pObj; }
+PyFunc::PyFunc(PyObject* pObj) { function = pObj; }
 
-pFunc::pFunc(const pFunc& pfunc) { function = pfunc.function; }
+PyFunc::PyFunc(const PyFunc& pyfunc) { function = pyfunc.function; }
 
-pFunc::~pFunc() {
+PyFunc::~PyFunc() {
   if (function != NULL) Py_DECREF(function);
 }
 
-double pFunc::call(double arg1) {
+double PyFunc::call(double arg1) {
   PyObject* ArgsTuple = PyTuple_New(1);
   PyTuple_SetItem(ArgsTuple, 0, PyFloat_FromDouble(arg1));
 
@@ -38,7 +38,7 @@ double pFunc::call(double arg1) {
   return ret;
 }
 
-double pFunc::call(double arg1, double arg2) {
+double PyFunc::call(double arg1, double arg2) {
   PyObject* ArgsTuple = PyTuple_New(2);
   PyTuple_SetItem(ArgsTuple, 0, PyFloat_FromDouble(arg1));
   PyTuple_SetItem(ArgsTuple, 1, PyFloat_FromDouble(arg2));
@@ -53,7 +53,7 @@ double pFunc::call(double arg1, double arg2) {
   return ret;
 }
 
-double pFunc::call(double arg1, double arg2, double arg3) {
+double PyFunc::call(double arg1, double arg2, double arg3) {
   PyObject* ArgsTuple = PyTuple_New(3);
   PyTuple_SetItem(ArgsTuple, 0, PyFloat_FromDouble(arg1));
   PyTuple_SetItem(ArgsTuple, 1, PyFloat_FromDouble(arg2));

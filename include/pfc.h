@@ -24,7 +24,7 @@
 
 #include "include/fdtd.h"
 #include "include/mesh.h"
-#include "include/pfunc.h"
+#include "include/pyfunc.h"
 #include "include/pyinput.h"
 
 /**
@@ -99,6 +99,6 @@ class PFC {
   int new_cell;
   double n0dp, q_m, q2_m2, halfq_m, halfqdz, quart_q2n0dtdp_m, qdt_mdp,
       q2dt_dzdp, *p, *p2;
-  pFunc *profile;  // concentration profile function
+  PyFunc *profile;  // concentration profile function
 };
 #endif  // INCLUDE_PFC_H_

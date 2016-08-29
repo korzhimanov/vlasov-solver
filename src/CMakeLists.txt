@@ -3,23 +3,23 @@ add_library(mymath mymath.cpp)
 add_library(file_saving file_saving.cpp)
 target_link_libraries(file_saving ${ZLIB_LIBRARIES})
 
-add_library(pfunc pfunc.cpp)
-target_link_libraries (pfunc ${PYTHON_LIBRARIES})
+add_library(pyfunc pyfunc.cpp)
+target_link_libraries (pyfunc ${PYTHON_LIBRARIES})
 
 add_library(pyinput pyinput.cpp)
-target_link_libraries(pyinput pfunc ${PYTHON_LIBRARIES})
+target_link_libraries(pyinput pyfunc ${PYTHON_LIBRARIES})
 
 add_library(mesh mesh.cpp)
 target_link_libraries(mesh pyinput)
 
 add_library(fdtd fdtd.cpp)
-target_link_libraries(fdtd mymath pfunc pyinput mesh)
+target_link_libraries(fdtd mymath pyfunc pyinput mesh)
 
 add_library(pfc pfc.cpp)
-target_link_libraries(pfc mymath file_saving pfunc pyinput mesh fdtd ${ZLIB_LIBRARIES})
+target_link_libraries(pfc mymath file_saving pyfunc pyinput mesh fdtd ${ZLIB_LIBRARIES})
 
 add_library(plasmas plasmas.cpp)
-target_link_libraries(plasmas mymath pfunc pyinput mesh pfc)
+target_link_libraries(plasmas mymath pyfunc pyinput mesh pfc)
 
 add_library(particle particle.cpp)
 

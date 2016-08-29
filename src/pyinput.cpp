@@ -125,17 +125,17 @@ void PyInput::SetPositive(std::string name, double &var, int &err) const {
   }
 }
 
-pFunc PyInput::GetFunc(std::string name, int &err) const {
+PyFunc PyInput::GetFunc(std::string name, int &err) const {
   PyObject *io = GetVarObject(name, err);
   if (err != 0) {
-    return pFunc();
+    return PyFunc();
   } else {
     if (!PyFunction_Check(io)) {
       std::cerr << name << " must be function." << std::endl;
       err = VAR_MUST_FUNCTION;
-      return pFunc();
+      return PyFunc();
     }
-    return pFunc(io);
+    return PyFunc(io);
   }
 }
 
