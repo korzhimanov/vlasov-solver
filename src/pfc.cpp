@@ -98,7 +98,7 @@ void PFC::AllocMemory() {
   p2 = new double[MAX_P];
   for (int j = 0; j < MAX_P; j++) {
     p[j] = (j - MAX_P / 2) * dp;
-    p2[j] = p[j] * p[j];
+    p2[j] = 1. + p[j] * p[j];
   }
 }
 
@@ -147,7 +147,7 @@ void PFC::CalcCurrent(FDTD *fdtd, double *ax, double *ay, double *a2) {
 #pragma omp parallel for private(i, ii, current, a2i1)
   for (i = 1; i < mesh->MAX_Z; i++) {
     ii = i * MAX_P;
-    a2i1 = 1. + ax[i] * ax[i] * q2_m2 + (ay[i] * q_m + P0) * (ay[i] * q_m + P0);
+    a2i1 = ax[i] * ax[i] * q2_m2 + (ay[i] * q_m + P0) * (ay[i] * q_m + P0);
     current = 0.;
     for (int j = 0; j < MAX_P; j++) {
       current += (*(f1 + ii + j) + *(f1 + ii - MAX_P + j)) / sqrt(a2i1 + p2[j]);
@@ -178,8 +178,8 @@ void PFC::MakeStep(double *ez, double *ax, double *ay) {
         for (j = 0; j < MAX_P; j++) {
           if (*(f1 + ii + j) > 1.e-14) {
             // calculate the relative velocity in phase space
-            vdt_dz = -qdt_mdp * ez[i] - q2dt_dzdp * (sqrt(1. + a2i1 + p2[j]) -
-                                                     sqrt(1. + a2i + p2[j]));
+            vdt_dz = -qdt_mdp * ez[i] -
+                     q2dt_dzdp * (sqrt(a2i1 + p2[j]) - sqrt(a2i + p2[j]));
 
             new_cell = j;
             flux_part = 0.;
@@ -233,6 +233,9 @@ void PFC::MakeStep(double *ez, double *ax, double *ay) {
         }
       }
 
+/**
+ * \todo Replace with parallel version (each process zeroes its own chunk)
+ */
 #pragma omp barrier
 #pragma omp single
     { memset(f1, 0, sizeof(double) * mesh->MAX_Z * MAX_P); }
@@ -249,7 +252,7 @@ void PFC::MakeStep(double *ez, double *ax, double *ay) {
           if (*(f2 + ii + j) > 1.e-14) {
             // calculate the relative velocity in phase space
             vdt_dz = 2. * mesh->dt_dz * p[j] /
-                     (sqrt(1. + a2i1 + p2[j]) + sqrt(1. + a2i + p2[j]));
+                     (sqrt(a2i1 + p2[j]) + sqrt(a2i + p2[j]));
 
             new_cell = i;
             flux_part = 0.;
@@ -372,8 +375,7 @@ double PFC::KineticEnergy(double *ax, double *ay, int left_bound,
     double a2i1 = q2_m2 * ax[i + 1] * ax[i + 1] +
                   (q_m * ay[i + 1] + P0) * (q_m * ay[i + 1] + P0);
     for (int j = 0; j < MAX_P; j++)
-      energy += (sqrt(1. + a2i + p2[j]) + sqrt(1. + a2i1 + p2[j]) - 2.) *
-                *(f1 + ii + j);
+      energy += (sqrt(a2i + p2[j]) + sqrt(a2i1 + p2[j]) - 2.) * *(f1 + ii + j);
   }
 
   return energy * .5 * fabs(CHARGE) * MASS * N0 * dp * mesh->dz;
