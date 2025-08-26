@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 
   std::stringstream output_folder_name;
   time_t current_time = time(NULL);
-  struct tm *utc_time = gmtime_r(&current_time, utc_time);
+  struct tm *utc_time = gmtime(&current_time);
 
   output_folder_name << utc_time->tm_year + 1900 << "-";
   output_folder_name << std::setfill('0');
