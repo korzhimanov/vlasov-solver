@@ -1,9 +1,9 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.10)
 
 project (Vlasov)
 
 find_package(ZLIB REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_package(Python COMPONENTS Development REQUIRED)
 find_package(OpenMP)
 
 include_directories(. ${ZLIB_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
