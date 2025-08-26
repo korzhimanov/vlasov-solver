@@ -7,6 +7,7 @@ find_package(Python COMPONENTS Development REQUIRED)
 find_package(OpenMP)
 
 include_directories(. ${ZLIB_INCLUDE_DIRS} ${Python_INCLUDE_DIRS})
+link_directories(${Python_LIBRARY_DIRS})
 
 add_compile_options(-Wall -g -O0 -std=c++11)
 

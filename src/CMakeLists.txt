@@ -4,10 +4,10 @@ add_library(file_saving file_saving.cpp)
 target_link_libraries(file_saving ${ZLIB_LIBRARIES})
 
 add_library(pyfunc pyfunc.cpp)
-target_link_libraries (pyfunc ${PYTHON_LIBRARIES})
+target_link_libraries (pyfunc ${Python_LIBRARIES})
 
 add_library(pyinput pyinput.cpp)
-target_link_libraries(pyinput pyfunc ${PYTHON_LIBRARIES})
+target_link_libraries(pyinput pyfunc ${Python_LIBRARIES})
 
 add_library(mesh mesh.cpp)
 target_link_libraries(mesh pyinput)
