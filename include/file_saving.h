@@ -89,7 +89,7 @@ void filesaving::save_file_1D_gzip(Type *a, const int num,
 template <typename Type>
 void filesaving::save_file_2D_txt(Type *a, const int columns, const int rows,
                                   const std::string name,
-                                  const bool need_transpose = false) {
+                                  const bool need_transpose) {
   fs.open(name.c_str(), std::ios_base::app | std::ios_base::out);
 
   int i, j, nx, ny;
