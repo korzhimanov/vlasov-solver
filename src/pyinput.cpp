@@ -57,11 +57,11 @@ void PyInput::ReadFile(std::string filename, int &err) {
 void PyInput::Set(std::string name, int &var, int &err) const {
   PyObject *io = GetVarObject(name, err);
   if (err == 0) {
-    if (!PyInt_Check(io)) {
+    if (!PyLong_Check(io)) {
       std::cerr << name << " must be integer." << std::endl;
       err = VAR_MUST_INTEGER;
     }
-    var = PyInt_AsLong(io);
+    var = PyLong_AsLong(io);
   }
 }
 
@@ -83,18 +83,18 @@ void PyInput::Set(std::string name, bool &var, int &err) const {
       std::cerr << name << " must be boolean." << std::endl;
       err = VAR_MUST_BOOLEAN;
     }
-    var = PyInt_AsLong(io);
+    var = PyLong_AsLong(io);
   }
 }
 
 void PyInput::Set(std::string name, std::string &var, int &err) const {
   PyObject *io = GetVarObject(name, err);
   if (err == 0) {
-    if (!PyString_Check(io)) {
+    if (!PyUnicode_Check(io)) {
       std::cerr << name << " must be string." << std::endl;
       err = VAR_MUST_STRING;
     }
-    var = std::string(PyString_AsString(io));
+    var = std::string(PyUnicode_AsUTF8(io));
   }
 }
 
